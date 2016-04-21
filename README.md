@@ -43,7 +43,7 @@ If serverHeader is not a String or missing, you will get an exception.
 You may mark properties in ConfigurationItems as optional.
 ```
 class ApplicationConfiguration extends ConfigurationItem {
- 	ApplicationConfiguration(String contents) : super.fromFile(contents);
+ 	ApplicationConfiguration(String fileName) : super.fromFile(fileName);
 	
 	int port;
 	
@@ -61,7 +61,7 @@ You may nest ConfigurationItems indefinitely.
 
 ```
 class ApplicationConfiguration extends ConfigurationItem {
- 	ApplicationConfiguration(String contents) : super.fromFile(contents);
+ 	ApplicationConfiguration(String fileName) : super.fromFile(fileName);
 	
 	int port;
 	
@@ -81,7 +81,7 @@ userDatabase:
 You may also use arrays and maps, for which the values can be primitive types or ConfigurationItem subclasses.
 ```
 class ApplicationConfiguration extends ConfigurationItem {
- 	ApplicationConfiguration(String contents) : super.fromFile(contents);
+ 	ApplicationConfiguration(String fileName) : super.fromFile(fileName);
 		
 	Map<String, DatabaseConnectionConfiguration> databases;
 }
