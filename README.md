@@ -30,9 +30,9 @@ serverHeader: booyah/1
 To read your configuration file:
 
 ```
-	var config = new ApplicationConfiguration("config.yaml");
-	print("${config.port}"); // -> 8000
-	print("${config.serverHeader}"); // -> "booyah/1"
+var config = new ApplicationConfiguration("config.yaml");
+print("${config.port}"); // -> 8000
+print("${config.serverHeader}"); // -> "booyah/1"
 ```
 
 If port is not an int or is missing, you will get an exception. 
