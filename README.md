@@ -52,12 +52,12 @@ class ApplicationConfiguration extends ConfigurationItem {
 }
 ```
 
-If serverHeader is omitted from your YAML when read, it will be in ApplicationConfiguration and no exception is thrown.
+If serverHeader is omitted from your YAML when read, its value will be null and no exception is thrown.
 
 There are two built-in ConfigurationItems, DatabaseConnectionConfiguration and APIConfiguration. These contain
 typical properties for common configuration values.
 
-You may nest ConfigurationItems indefinitely.
+You may nest ConfigurationItems as deeply as you wish:
 
 ```
 class ApplicationConfiguration extends ConfigurationItem {
@@ -106,4 +106,4 @@ See the tests for more examples.
 
 Please file feature requests and bugs at the [issue tracker][tracker].
 
-[tracker]: http://github.com/stablekernel/issues
+[tracker]: http://github.com/stablekernel/safe_config/issues
