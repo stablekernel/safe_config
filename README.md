@@ -13,7 +13,8 @@ You define a subclass of ConfigurationItem with those properties:
 
 ```
 class ApplicationConfiguration extends ConfigurationItem {
- 	ApplicationConfiguration(String fileName) : super.fromFile(fileName);
+ 	ApplicationConfiguration(String fileName) : 
+ 		super.fromFile(fileName);
 	
 	int port;
 	String serverHeader;
@@ -43,7 +44,8 @@ If serverHeader is not a String or missing, you will get an exception.
 You may mark properties in ConfigurationItems as optional.
 ```
 class ApplicationConfiguration extends ConfigurationItem {
- 	ApplicationConfiguration(String fileName) : super.fromFile(fileName);
+ 	ApplicationConfiguration(String fileName) : 
+ 		super.fromFile(fileName);
 	
 	int port;
 	
@@ -61,7 +63,8 @@ You may nest ConfigurationItems as deeply as you wish:
 
 ```
 class ApplicationConfiguration extends ConfigurationItem {
- 	ApplicationConfiguration(String fileName) : super.fromFile(fileName);
+ 	ApplicationConfiguration(String fileName) : 
+ 		super.fromFile(fileName);
 	
 	int port;
 	
@@ -81,7 +84,8 @@ userDatabase:
 You may also use arrays and maps, for which the values can be primitive types or ConfigurationItem subclasses.
 ```
 class ApplicationConfiguration extends ConfigurationItem {
- 	ApplicationConfiguration(String fileName) : super.fromFile(fileName);
+ 	ApplicationConfiguration(String fileName) : 
+ 		super.fromFile(fileName);
 		
 	Map<String, DatabaseConnectionConfiguration> databases;
 }
@@ -106,7 +110,9 @@ Then, you may access it as such:
 var config = new ApplicationConfig("config.yaml");
 
 var databaseOne = config.databases["db1"];
-await database.connect(databaseOne.host, databaseOne.port, databaseOne.databaseName);
+await database.connect(databaseOne.host, 
+	databaseOne.port, 
+	databaseOne.databaseName);
 ```
 
 See the tests for more examples.

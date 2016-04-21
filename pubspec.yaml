@@ -3,6 +3,7 @@ description: A safe and convenient way to read YAML configuration files.
 version: 1.0.0
 author: Joe Conway <joe.conway@stablekernel.com>
 homepage: http://stablekernel.com
+documentation:
 
 environment:
   sdk: '>=1.0.0 <2.0.0'
