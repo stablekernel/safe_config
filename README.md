@@ -100,6 +100,15 @@ databases:
     port: 5432
 ```
 
+Then, you may access it as such:
+
+```
+var config = new ApplicationConfig("config.yaml");
+
+var databaseOne = config.database["db1"];
+await database.connect(databaseOne.host, databaseOne.port, databaseOne.databaseName);
+```
+
 See the tests for more examples.
 
 ## Features and bugs
