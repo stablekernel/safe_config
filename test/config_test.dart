@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 import 'package:safe_config/safe_config.dart';
-
+import 'dart:io';
 void main() {
   test("Success case", () {
     var yamlString =
@@ -184,11 +184,37 @@ void main() {
     expect(special.databaseMap["db2"].port, 2000);
     expect(special.databaseMap["db2"].host, "stablekernel.com");
   });
+
+  test("From file works the same", () {
+    var yamlString =
+        "port: 80\n"
+        "name: foobar\n"
+        "database:\n"
+        "  host: stablekernel.com\n"
+        "  username: bob\n"
+        "  password: fred\n"
+        "  databaseName: dbname\n"
+        "  port: 5000";
+
+    var file = new File("tmp.yaml");
+    file.writeAsStringSync(yamlString);
+
+    var t = new TopLevelConfiguration.fromFile("tmp.yaml");
+    expect(t.port, 80);
+    expect(t.name, "foobar");
+    expect(t.database.host, "stablekernel.com");
+    expect(t.database.username, "bob");
+    expect(t.database.password, "fred");
+    expect(t.database.databaseName, "dbname");
+    expect(t.database.port, 5000);
+
+    file.deleteSync();
+  });
 }
 
 class TopLevelConfiguration extends ConfigurationItem {
   TopLevelConfiguration(String contents) : super.fromString(contents);
-
+  TopLevelConfiguration.fromFile(String fileName) : super.fromFile(fileName);
   @requiredConfiguration
   int port;
 
