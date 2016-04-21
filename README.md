@@ -13,7 +13,7 @@ You define a subclass of ConfigurationItem with those properties:
 
 ```
 class ApplicationConfiguration extends ConfigurationItem {
- 	ApplicationConfiguration(String contents) : super.fromFile(contents);
+ 	ApplicationConfiguration(String fileName) : super.fromFile(fileName);
 	
 	int port;
 	String serverHeader;
