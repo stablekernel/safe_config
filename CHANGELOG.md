@@ -8,3 +8,7 @@
 
 - Added documentation generation
 - Update readme
+
+## 1.0.2
+
+- Added library level documentation
