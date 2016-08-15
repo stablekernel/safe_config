@@ -1,6 +1,7 @@
 import 'package:test/test.dart';
 import 'package:safe_config/safe_config.dart';
 import 'dart:io';
+
 void main() {
   test("Success case", () {
     var yamlString =
@@ -14,6 +15,26 @@ void main() {
         "  port: 5000";
 
     var t = new TopLevelConfiguration(yamlString);
+    expect(t.port, 80);
+    expect(t.name, "foobar");
+    expect(t.database.host, "stablekernel.com");
+    expect(t.database.username, "bob");
+    expect(t.database.password, "fred");
+    expect(t.database.databaseName, "dbname");
+    expect(t.database.port, 5000);
+
+    var asMap = {
+      "port" : 80,
+      "name" : "foobar",
+      "database" : {
+        "host" : "stablekernel.com",
+        "username" : "bob",
+        "password" : "fred",
+        "databaseName" : "dbname",
+        "port" : 5000
+      }
+    };
+    t = new TopLevelConfiguration.fromMap(asMap);
     expect(t.port, 80);
     expect(t.name, "foobar");
     expect(t.database.host, "stablekernel.com");
@@ -44,6 +65,27 @@ void main() {
     expect(t.database.password, "fred");
     expect(t.database.databaseName, "dbname");
     expect(t.database.port, 5000);
+
+    var asMap = {
+      "port" : 80,
+      "name" : "foobar",
+      "extraKey" : 2,
+      "database" : {
+        "host" : "stablekernel.com",
+        "username" : "bob",
+        "password" : "fred",
+        "databaseName" : "dbname",
+        "port" : 5000
+      }
+    };
+    t = new TopLevelConfiguration.fromMap(asMap);
+    expect(t.port, 80);
+    expect(t.name, "foobar");
+    expect(t.database.host, "stablekernel.com");
+    expect(t.database.username, "bob");
+    expect(t.database.password, "fred");
+    expect(t.database.databaseName, "dbname");
+    expect(t.database.port, 5000);
   });
 
   test("Missing required top-level explicit", () {
@@ -60,8 +102,23 @@ void main() {
       var _ = new TopLevelConfiguration(yamlString);
     } on ConfigurationException catch (e) {
       expect(e.message, "port is required but was not found in configuration.");
-    } catch (e) {
-      expect(true, false, reason: "Should not reach here");
+    }
+
+    try {
+      var asMap = {
+        "name" : "foobar",
+        "extraKey" : 2,
+        "database" : {
+          "host" : "stablekernel.com",
+          "username" : "bob",
+          "password" : "fred",
+          "databaseName" : "dbname",
+          "port" : 5000
+        }
+      };
+      var _ = new TopLevelConfiguration.fromMap(asMap);
+    } on ConfigurationException catch (e) {
+      expect(e.message, "port is required but was not found in configuration.");
     }
   });
 
@@ -73,8 +130,16 @@ void main() {
       var _ = new TopLevelConfiguration(yamlString);
     } on ConfigurationException catch (e) {
       expect(e.message, "database is required but was not found in configuration.");
-    } catch (e) {
-      expect(true, false, reason: "Should not reach here");
+    }
+
+    try {
+      var asMap = {
+        "port" : 80,
+        "name" : "foobar"
+      };
+      var _ = new TopLevelConfiguration.fromMap(asMap);
+    } on ConfigurationException catch (e) {
+      expect(e.message, "database is required but was not found in configuration.");
     }
   });
 
@@ -89,6 +154,25 @@ void main() {
         "  port: 5000";
 
     var t = new TopLevelConfiguration(yamlString);
+    expect(t.port, 80);
+    expect(t.name, isNull);
+    expect(t.database.host, "stablekernel.com");
+    expect(t.database.username, "bob");
+    expect(t.database.password, "fred");
+    expect(t.database.databaseName, "dbname");
+    expect(t.database.port, 5000);
+
+    var asMap = {
+      "port" : 80,
+      "database" : {
+        "host" : "stablekernel.com",
+        "username" : "bob",
+        "password" : "fred",
+        "databaseName" : "dbname",
+        "port" : 5000
+      }
+    };
+    t = new TopLevelConfiguration.fromMap(asMap);
     expect(t.port, 80);
     expect(t.name, isNull);
     expect(t.database.host, "stablekernel.com");
@@ -116,6 +200,25 @@ void main() {
     expect(t.database.password, "fred");
     expect(t.database.databaseName, "dbname");
     expect(t.database.port, 5000);
+
+    var asMap = {
+      "port" : 80,
+      "name" : "foobar",
+      "database" : {
+        "host" : "stablekernel.com",
+        "password" : "fred",
+        "databaseName" : "dbname",
+        "port" : 5000
+      }
+    };
+    t = new TopLevelConfiguration.fromMap(asMap);
+    expect(t.port, 80);
+    expect(t.name, "foobar");
+    expect(t.database.host, "stablekernel.com");
+    expect(t.database.username, isNull);
+    expect(t.database.password, "fred");
+    expect(t.database.databaseName, "dbname");
+    expect(t.database.port, 5000);
   });
 
   test("Nested required cannot be missing", () {
@@ -131,8 +234,21 @@ void main() {
       var _ = new TopLevelConfiguration(yamlString);
     } on ConfigurationException catch (e) {
       expect(e.message, "databaseName is required but was not found in configuration.");
-    } catch (e) {
-      expect(true, false, reason: "Should not reach here");
+    }
+
+    try {
+      var asMap = {
+        "port" : 80,
+        "name" : "foobar",
+        "database" : {
+          "host" : "stablekernel.com",
+          "password" : "fred",
+          "port" : 5000
+        }
+      };
+      var _ = new TopLevelConfiguration.fromMap(asMap);
+    } on ConfigurationException catch (e) {
+      expect(e.message, "databaseName is required but was not found in configuration.");
     }
   });
 
@@ -215,6 +331,8 @@ void main() {
 class TopLevelConfiguration extends ConfigurationItem {
   TopLevelConfiguration(String contents) : super.fromString(contents);
   TopLevelConfiguration.fromFile(String fileName) : super.fromFile(fileName);
+  TopLevelConfiguration.fromMap(Map map) : super.fromMap(map);
+
   @requiredConfiguration
   int port;
 

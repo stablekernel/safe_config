@@ -9,6 +9,10 @@ abstract class ConfigurationItem {
     
   }
 
+  ConfigurationItem.fromMap(Map map) {
+    _setItemsFromYaml(map);
+  }
+
   /// Loads a YAML-compliant string into this instance's properties.
   ConfigurationItem.fromString(String contents) {
     var config = loadYaml(contents);
