@@ -326,6 +326,41 @@ void main() {
 
     file.deleteSync();
   });
+
+  test("Optional nested ConfigurationItem can be omitted", () {
+    var yamlString = "port: 80";
+
+    var config = new OptionalEmbeddedContainer(yamlString);
+    expect(config.port, 80);
+    expect(config.database, isNull);
+
+    yamlString =
+      "port: 80\n"
+      "database:\n"
+      "  host: here\n"
+      "  port: 90\n"
+      "  databaseName: db";
+
+    config = new OptionalEmbeddedContainer(yamlString);
+    expect(config.port, 80);
+    expect(config.database.host, "here");
+    expect(config.database.port, 90);
+    expect(config.database.databaseName, "db");
+  });
+
+  test("Optional nested ConfigurationItem obeys required items", () {
+    // Missing host intentionally
+    var yamlString =
+    "port: 80\n"
+        "database:\n"
+        "  port: 90\n"
+        "  databaseName: db";
+
+    try {
+      var _ = new OptionalEmbeddedContainer(yamlString);
+      expect(true, false);
+    } on ConfigurationException {}
+  });
 }
 
 class TopLevelConfiguration extends ConfigurationItem {
@@ -349,4 +384,13 @@ class SpecialInfo extends ConfigurationItem {
   List<DatabaseConnectionConfiguration> databaseRecords;
   Map<String, int> integers;
   Map<String, DatabaseConnectionConfiguration> databaseMap;
+}
+
+class OptionalEmbeddedContainer extends ConfigurationItem {
+  OptionalEmbeddedContainer(String contents) : super.fromString(contents);
+
+  int port;
+
+  @optionalConfiguration
+  DatabaseConnectionConfiguration database;
 }

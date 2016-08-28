@@ -39,11 +39,11 @@ abstract class ConfigurationItem {
       VariableMirror variableMirror = decl;
       var value = items[MirrorSystem.getName(sym)];
 
-      if (value == null && _isVariableRequired(sym, variableMirror)) {
+      if (value != null) {
+        _readConfigurationItem(sym, variableMirror, value);
+      } else if (_isVariableRequired(sym, variableMirror)) {
         throw new ConfigurationException("${MirrorSystem.getName(sym)} is required but was not found in configuration.");
       }
-
-      _readConfigurationItem(sym, variableMirror, value);
     });
   }
 
