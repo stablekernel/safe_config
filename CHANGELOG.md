@@ -1,18 +1,24 @@
 # Changelog
 
-## 1.0.0
+# 1.0.4
 
-- Initial version
+- Fixed issue where nested ConfigurationItems marked as optional would fail to parse.
+
+# 1.0.3
+
+- Added ConfigurationItem.fromMap to pass a Map as the source for a ConfigurationItem
+
+## 1.0.2
+
+- Added library level documentation
 
 ## 1.0.1
 
 - Added documentation generation
 - Update readme
 
-## 1.0.2
+## 1.0.0
 
-- Added library level documentation
+- Initial version
 
-# 1.0.3
 
-- Added ConfigurationItem.fromMap to pass a Map as the source for a ConfigurationItem
