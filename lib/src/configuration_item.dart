@@ -10,13 +10,13 @@ abstract class ConfigurationItem {
   }
 
   ConfigurationItem.fromMap(Map map) {
-    _setItemsFromYaml(map);
+    readFromMap(map);
   }
 
   /// Loads a YAML-compliant string into this instance's properties.
   ConfigurationItem.fromString(String contents) {
     var config = loadYaml(contents);
-    _setItemsFromYaml(config);
+    readFromMap(config);
   }
 
   /// Opens a file and reads its string contents into this instance's properties.
@@ -25,12 +25,39 @@ abstract class ConfigurationItem {
   /// If [name] is an absolute path, it will ignore the current working directory.
   ConfigurationItem.fromFile(String name) : this.fromString(new File(name).readAsStringSync());
 
-  void set _subItem(dynamic item) {
-    _setItemsFromYaml(item);
+  List<String> get _missingRequiredValues {
+    var reflectedThis = reflect(this);
+    return reflectedThis.type.declarations.values
+        .where((dm) {
+          if (dm is! VariableMirror) {
+            return false;
+          }
+
+          ConfigurationItemAttribute metadata = dm.metadata.firstWhere((im) => im.reflectee is ConfigurationItemAttribute,
+              orElse: () => reflect(requiredConfiguration)).reflectee;
+          return metadata.type == ConfigurationItemAttributeType.required;
+        })
+        .map((dm) => dm as VariableMirror)
+        .where((VariableMirror vm) => reflectedThis.getField(vm.simpleName).reflectee == null)
+        .map((VariableMirror vm) => MirrorSystem.getName(vm.simpleName))
+        .toList();
   }
 
-  void _setItemsFromYaml(dynamic items) {
+  void set _subItem(dynamic item) {
+    if (item is! Map) {
+      decode(item);
+      var missing = _missingRequiredValues;
+      if (missing.length > 0) {
+        throw new ConfigurationException("Missing items for ${this.runtimeType}: $missing.");
+      }
+    } else {
+      readFromMap(item);
+    }
+  }
+
+  void readFromMap(Map<String, dynamic> items) {
     var reflectedThis = reflect(this);
+
     reflectedThis.type.declarations.forEach((sym, decl) {
       if (decl is! VariableMirror) {
         return;
@@ -46,6 +73,11 @@ abstract class ConfigurationItem {
       }
     });
   }
+
+  void decode(dynamic anything) {
+    throw new ConfigurationException("${this.runtimeType} attempted to decode value $anything, but did not override decode.");
+  }
+
 
   bool _isVariableRequired(Symbol symbol, VariableMirror m) {
     ConfigurationItemAttribute attribute = m.metadata

@@ -361,6 +361,45 @@ void main() {
       expect(true, false);
     } on ConfigurationException {}
   });
+
+  test("Database configuration can come from string", () {
+    var yamlString =
+        "port: 80\n"
+        "database: \"postgres://dart:pw@host:5432/dbname\"\n";
+
+    var values = new OptionalEmbeddedContainer(yamlString);
+    expect(values.port, 80);
+    expect(values.database.username, "dart");
+    expect(values.database.password, "pw");
+    expect(values.database.port, 5432);
+    expect(values.database.databaseName, "dbname");
+  });
+
+  test("Omitting optional values in a 'decoded' config still returns succees", () {
+    var yamlString =
+        "port: 80\n"
+        "database: \"postgres://host:5432/dbname\"\n";
+
+    var values = new OptionalEmbeddedContainer(yamlString);
+    expect(values.port, 80);
+    expect(values.database.username, isNull);
+    expect(values.database.password, isNull);
+    expect(values.database.port, 5432);
+    expect(values.database.databaseName, "dbname");
+  });
+
+  test("Not including required values in a 'decoded' config still yields error", () {
+    var yamlString =
+        "port: 80\n"
+        "database: \"postgres://dart:pw@host:5432/dbname\"\n";
+
+    var values = new OptionalEmbeddedContainer(yamlString);
+    expect(values.port, 80);
+    expect(values.database.username, "dart");
+    expect(values.database.password, "pw");
+    expect(values.database.port, 5432);
+    expect(values.database.databaseName, "dbname");
+  });
 }
 
 class TopLevelConfiguration extends ConfigurationItem {
