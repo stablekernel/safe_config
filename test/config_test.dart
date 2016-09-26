@@ -391,14 +391,15 @@ void main() {
   test("Not including required values in a 'decoded' config still yields error", () {
     var yamlString =
         "port: 80\n"
-        "database: \"postgres://dart:pw@host:5432/dbname\"\n";
+        "database: \"postgres://dart:pw@host:5432\"\n";
 
-    var values = new OptionalEmbeddedContainer(yamlString);
-    expect(values.port, 80);
-    expect(values.database.username, "dart");
-    expect(values.database.password, "pw");
-    expect(values.database.port, 5432);
-    expect(values.database.databaseName, "dbname");
+    try {
+      var _ = new OptionalEmbeddedContainer(yamlString);
+      expect(true, false);
+    } on ConfigurationException catch (e) {
+      expect(e.message, contains("DatabaseConnectionConfiguration"));
+      expect(e.message, contains("databaseName"));
+    }
   });
 }
 

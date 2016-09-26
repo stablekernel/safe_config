@@ -54,7 +54,9 @@ class DatabaseConnectionConfiguration extends ConfigurationItem {
     var uri = Uri.parse(anything);
     host = uri.host;
     port = uri.port;
-    databaseName = uri.pathSegments.first;
+    if (uri.pathSegments.length == 1) {
+      databaseName = uri.pathSegments.first;
+    }
 
     if (uri.userInfo == null || uri.userInfo == '') {
       return;
