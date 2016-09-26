@@ -401,6 +401,13 @@ void main() {
       expect(e.message, contains("databaseName"));
     }
   });
+
+  test("Environment variable escape values read from Environment", () {
+    var yamlString = "path: \$PATH\noptionalDooDad: \$XYZ123";
+    var values = new EnvironmentConfiguration(yamlString);
+    expect(values.path, Platform.environment["PATH"]);
+    expect(values.optionalDooDad, isNull);
+  });
 }
 
 class TopLevelConfiguration extends ConfigurationItem {
@@ -433,4 +440,13 @@ class OptionalEmbeddedContainer extends ConfigurationItem {
 
   @optionalConfiguration
   DatabaseConnectionConfiguration database;
+}
+
+class EnvironmentConfiguration extends ConfigurationItem {
+  EnvironmentConfiguration(String contents) : super.fromString(contents);
+
+  String path;
+
+  @optionalConfiguration
+  String optionalDooDad;
 }

@@ -46,6 +46,7 @@ abstract class ConfigurationItem {
   void set _subItem(dynamic item) {
     if (item is! Map) {
       decode(item);
+
       var missing = _missingRequiredValues;
       if (missing.length > 0) {
         throw new ConfigurationException("Missing items for ${this.runtimeType}: $missing.");
@@ -78,7 +79,6 @@ abstract class ConfigurationItem {
     throw new ConfigurationException("${this.runtimeType} attempted to decode value $anything, but did not override decode.");
   }
 
-
   bool _isVariableRequired(Symbol symbol, VariableMirror m) {
     ConfigurationItemAttribute attribute = m.metadata
         .firstWhere((im) => im.type.isSubtypeOf(reflectType(ConfigurationItemAttribute)), orElse: () => null)
@@ -89,6 +89,10 @@ abstract class ConfigurationItem {
 
   void _readConfigurationItem(Symbol symbol, VariableMirror mirror, dynamic value) {
     var reflectedThis = reflect(this);
+
+    if (value is String && value.startsWith("\$")) {
+      value = Platform.environment[value.substring(1)];
+    }
 
     var decodedValue = null;
     if (mirror.type.isSubtypeOf(reflectType(ConfigurationItem))) {
