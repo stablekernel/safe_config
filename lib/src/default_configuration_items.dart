@@ -45,6 +45,33 @@ class DatabaseConnectionConfiguration extends ConfigurationItem {
   /// This property is optional.
   @optionalConfiguration
   bool isTemporary;
+
+  void decode(dynamic anything) {
+    if (anything is! String) {
+      throw new ConfigurationException("Invalid decode value for ${this.runtimeType}, expected String, got ${anything.runtimeType}.");
+    }
+
+    var uri = Uri.parse(anything);
+    host = uri.host;
+    port = uri.port;
+    if (uri.pathSegments.length == 1) {
+      databaseName = uri.pathSegments.first;
+    }
+
+    if (uri.userInfo == null || uri.userInfo == '') {
+      return;
+    }
+
+    var authority = uri.userInfo.split(":");
+    if (authority != null) {
+      if (authority.length > 0) {
+        username = authority.first;
+      }
+      if (authority.length > 1) {
+        password = authority.last;
+      }
+    }
+  }
 }
 
 /// A [ConfigurationItem] to represent an external HTTP API.

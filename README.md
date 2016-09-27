@@ -115,6 +115,44 @@ await database.connect(databaseOne.host,
 	databaseOne.databaseName);
 ```
 
+A configuration item may have multiple YAML representations. For example, a `DatabaseConnectionConfiguration` can be represented as a Map<String, dynamic> of each component (username, host, etc.). It may also be represented as a connection string, e.g. "postgres://user:password@host:port/database". You may allow this behavior by overriding `decode` in a subclass of `ConfigurationItem`:
+
+```
+class AuthorityConfiguration extends ConfigurationItem {
+  String username;
+  String password;
+
+  void decode(dynamic anyValue) {
+    if (anyValue is! String) {
+      throw new ConfigurationException("Expected a String for AuthorityConfiguration.";
+    }
+
+    username = anyValue.split(":").first;
+    password = anyValue.split(":").last;
+  }
+}
+```
+
+This configuration item could be read in either of these two scenarios:
+
+```
+authority:
+    username: "Bob"
+    password: "Fred"
+
+// or
+
+authority: "Bob:Fred"
+```
+
+Configuration items may also be redirected to use environment variables. For platforms like Heroku, this is valuable because configuration management is done through environment variables. To reference an environment variable in a configuration file, use the '$VARIABLE' syntax as a value:
+
+```
+port: $PORT
+```
+
+When read, this configuration file would replace '$PORT' with the environment variable named 'PORT'.
+
 See the tests for more examples.
 
 ## Features and bugs

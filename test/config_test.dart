@@ -361,6 +361,57 @@ void main() {
       expect(true, false);
     } on ConfigurationException {}
   });
+
+  test("Database configuration can come from string", () {
+    var yamlString =
+        "port: 80\n"
+        "database: \"postgres://dart:pw@host:5432/dbname\"\n";
+
+    var values = new OptionalEmbeddedContainer(yamlString);
+    expect(values.port, 80);
+    expect(values.database.username, "dart");
+    expect(values.database.password, "pw");
+    expect(values.database.port, 5432);
+    expect(values.database.databaseName, "dbname");
+  });
+
+  test("Omitting optional values in a 'decoded' config still returns succees", () {
+    var yamlString =
+        "port: 80\n"
+        "database: \"postgres://host:5432/dbname\"\n";
+
+    var values = new OptionalEmbeddedContainer(yamlString);
+    expect(values.port, 80);
+    expect(values.database.username, isNull);
+    expect(values.database.password, isNull);
+    expect(values.database.port, 5432);
+    expect(values.database.databaseName, "dbname");
+  });
+
+  test("Not including required values in a 'decoded' config still yields error", () {
+    var yamlString =
+        "port: 80\n"
+        "database: \"postgres://dart:pw@host:5432\"\n";
+
+    try {
+      var _ = new OptionalEmbeddedContainer(yamlString);
+      expect(true, false);
+    } on ConfigurationException catch (e) {
+      expect(e.message, contains("DatabaseConnectionConfiguration"));
+      expect(e.message, contains("databaseName"));
+    }
+  });
+
+  test("Environment variable escape values read from Environment", () {
+    print("This test must be run with environment variables of TEST_VALUE=1 and TEST_BOOL=true");
+
+    var yamlString = "path: \$PATH\noptionalDooDad: \$XYZ123\ntestValue: \$TEST_VALUE\ntestBoolean: \$TEST_BOOL";
+    var values = new EnvironmentConfiguration(yamlString);
+    expect(values.path, Platform.environment["PATH"]);
+    expect(values.testValue, int.parse(Platform.environment["TEST_VALUE"]));
+    expect(values.testBoolean, true);
+    expect(values.optionalDooDad, isNull);
+  });
 }
 
 class TopLevelConfiguration extends ConfigurationItem {
@@ -393,4 +444,15 @@ class OptionalEmbeddedContainer extends ConfigurationItem {
 
   @optionalConfiguration
   DatabaseConnectionConfiguration database;
+}
+
+class EnvironmentConfiguration extends ConfigurationItem {
+  EnvironmentConfiguration(String contents) : super.fromString(contents);
+
+  String path;
+  int testValue;
+  bool testBoolean;
+
+  @optionalConfiguration
+  String optionalDooDad;
 }
