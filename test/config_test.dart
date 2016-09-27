@@ -403,9 +403,13 @@ void main() {
   });
 
   test("Environment variable escape values read from Environment", () {
-    var yamlString = "path: \$PATH\noptionalDooDad: \$XYZ123";
+    print("This test must be run with environment variables of TEST_VALUE=1 and TEST_BOOL=true");
+
+    var yamlString = "path: \$PATH\noptionalDooDad: \$XYZ123\ntestValue: \$TEST_VALUE\ntestBoolean: \$TEST_BOOL";
     var values = new EnvironmentConfiguration(yamlString);
     expect(values.path, Platform.environment["PATH"]);
+    expect(values.testValue, int.parse(Platform.environment["TEST_VALUE"]));
+    expect(values.testBoolean, true);
     expect(values.optionalDooDad, isNull);
   });
 }
@@ -446,6 +450,8 @@ class EnvironmentConfiguration extends ConfigurationItem {
   EnvironmentConfiguration(String contents) : super.fromString(contents);
 
   String path;
+  int testValue;
+  bool testBoolean;
 
   @optionalConfiguration
   String optionalDooDad;

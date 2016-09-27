@@ -98,6 +98,16 @@ abstract class ConfigurationItem {
 
     if (value is String && value.startsWith("\$")) {
       value = Platform.environment[value.substring(1)];
+
+      if (value == null) {
+        return;
+      }
+
+      if (mirror.type.isSubtypeOf(reflectType(int))) {
+        value = int.parse(value);
+      } else if (mirror.type.isSubtypeOf(reflectType(bool))) {
+        value = value == "true";
+      }
     }
 
     var decodedValue = null;
