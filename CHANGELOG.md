@@ -1,5 +1,10 @@
 # Changelog
 
+# 1.1.0
+
+- Enables support for reading environment variables
+- Allows decoders for ConfigurationItem subclasses that may have multiple representations, e.g. a DatabaseConnectionConfiguration from a database connection string
+
 # 1.0.4
 
 - Fixed issue where nested ConfigurationItems marked as optional would fail to parse.
