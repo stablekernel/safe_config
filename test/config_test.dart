@@ -45,6 +45,43 @@ void main() {
   });
 
   test("Extra property", () {
+    try {
+      var yamlString =
+          "port: 80\n"
+          "name: foobar\n"
+          "extraKey: 2\n"
+          "database:\n"
+          "  host: stablekernel.com\n"
+          "  username: bob\n"
+          "  password: fred\n"
+          "  databaseName: dbname\n"
+          "  port: 5000";
+
+      var _ = new TopLevelConfiguration(yamlString);
+    } on ConfigurationException catch (e) {
+      expect(e.message, "TopLevelConfiguration does not allow extra keys, but configuration contained extra keys: extraKey");
+    }
+
+    try {
+      var asMap = {
+        "port" : 80,
+        "name" : "foobar",
+        "extraKey" : 2,
+        "database" : {
+          "host" : "stablekernel.com",
+          "username" : "bob",
+          "password" : "fred",
+          "databaseName" : "dbname",
+          "port" : 5000
+        }
+      };
+      var _ = new TopLevelConfiguration.fromMap(asMap);
+    } on ConfigurationException catch (e) {
+      expect(e.message, "TopLevelConfiguration does not allow extra keys, but configuration contained extra keys: extraKey");
+    }
+  });
+
+  test("Extra property with extra keys allowed", () {
     var yamlString =
         "port: 80\n"
         "name: foobar\n"
@@ -54,17 +91,19 @@ void main() {
         "  username: bob\n"
         "  password: fred\n"
         "  databaseName: dbname\n"
-        "  extraKey: 2\n"
+        "  extraInnerKey: 3\n"
         "  port: 5000";
 
-    var t = new TopLevelConfiguration(yamlString);
+    var t = new ExtraKeyConfiguration(yamlString);
     expect(t.port, 80);
     expect(t.name, "foobar");
+    expect(t.extraKeys["extraKey"], 2);
     expect(t.database.host, "stablekernel.com");
     expect(t.database.username, "bob");
     expect(t.database.password, "fred");
     expect(t.database.databaseName, "dbname");
     expect(t.database.port, 5000);
+    expect(t.database.extraKeys["extraInnerKey"], 3);
 
     var asMap = {
       "port" : 80,
@@ -75,17 +114,59 @@ void main() {
         "username" : "bob",
         "password" : "fred",
         "databaseName" : "dbname",
-        "port" : 5000
+        "port" : 5000,
+        "extraInnerKey" : 3,
       }
     };
-    t = new TopLevelConfiguration.fromMap(asMap);
+    t = new ExtraKeyConfiguration.fromMap(asMap);
     expect(t.port, 80);
     expect(t.name, "foobar");
+    expect(t.extraKeys["extraKey"], 2);
     expect(t.database.host, "stablekernel.com");
     expect(t.database.username, "bob");
     expect(t.database.password, "fred");
     expect(t.database.databaseName, "dbname");
     expect(t.database.port, 5000);
+    expect(t.database.extraKeys["extraInnerKey"], 3);
+  });
+
+  test("Extra property with extra keys allowed only on the top level configuration", () {
+    try {
+      var yamlString =
+          "port: 80\n"
+          "name: foobar\n"
+          "extraKey: 2\n"
+          "database:\n"
+          "  host: stablekernel.com\n"
+          "  username: bob\n"
+          "  password: fred\n"
+          "  databaseName: dbname\n"
+          "  extraInnerKey: 3\n"
+          "  port: 5000";
+
+      var _ = new OuterExtraKeyConfiguration(yamlString);
+    } on ConfigurationException catch (e) {
+      expect(e.message, "DatabaseConnectionConfiguration does not allow extra keys, but configuration contained extra keys: extraInnerKey");
+    }
+
+    try {
+      var asMap = {
+        "port" : 80,
+        "name" : "foobar",
+        "extraKey" : 2,
+        "database" : {
+          "host" : "stablekernel.com",
+          "username" : "bob",
+          "password" : "fred",
+          "databaseName" : "dbname",
+          "port" : 5000,
+          "extraInnerKey" : 3,
+        }
+      };
+      var _ = new OuterExtraKeyConfiguration.fromMap(asMap);
+    } on ConfigurationException catch (e) {
+      expect(e.message, "DatabaseConnectionConfiguration does not allow extra keys, but configuration contained extra keys: extraInnerKey");
+    }
   });
 
   test("Missing required top-level explicit", () {
@@ -107,7 +188,6 @@ void main() {
     try {
       var asMap = {
         "name" : "foobar",
-        "extraKey" : 2,
         "database" : {
           "host" : "stablekernel.com",
           "username" : "bob",
@@ -418,6 +498,38 @@ class TopLevelConfiguration extends ConfigurationItem {
   TopLevelConfiguration(String contents) : super.fromString(contents);
   TopLevelConfiguration.fromFile(String fileName) : super.fromFile(fileName);
   TopLevelConfiguration.fromMap(Map map) : super.fromMap(map);
+
+  @requiredConfiguration
+  int port;
+
+  @optionalConfiguration
+  String name;
+
+  DatabaseConnectionConfiguration database;
+}
+
+@allowsExtraKeysConfiguration
+class ExtraKeyConfiguration extends ConfigurationItem {
+  ExtraKeyConfiguration(String contents) : super.fromString(contents);
+  ExtraKeyConfiguration.fromFile(String fileName) : super.fromFile(fileName);
+  ExtraKeyConfiguration.fromMap(Map map) : super.fromMap(map);
+
+  @requiredConfiguration
+  int port;
+
+  @optionalConfiguration
+  String name;
+
+  @allowsExtraKeysConfiguration
+  DatabaseConnectionConfiguration database;
+}
+
+
+@allowsExtraKeysConfiguration
+class OuterExtraKeyConfiguration extends ConfigurationItem {
+  OuterExtraKeyConfiguration(String contents) : super.fromString(contents);
+  OuterExtraKeyConfiguration.fromFile(String fileName) : super.fromFile(fileName);
+  OuterExtraKeyConfiguration.fromMap(Map map) : super.fromMap(map);
 
   @requiredConfiguration
   int port;
