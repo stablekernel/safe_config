@@ -65,10 +65,10 @@ abstract class ConfigurationItem {
       }
     });
 
-    var extraKeys = items.keys.where((key) => !properties.contains(key));
+    var unexpectedKeys = items.keys.where((key) => !properties.contains(key));
 
-    if (extraKeys.length > 0) {
-      throw new ConfigurationException("${this.runtimeType} contained extra keys: ${extraKeys.join(", ")}");
+    if (unexpectedKeys.length > 0) {
+      throw new ConfigurationException("${this.runtimeType} contained unexpected keys: ${unexpectedKeys.join(", ")}");
     }
   }
 

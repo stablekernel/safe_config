@@ -104,7 +104,7 @@ void main() {
 
       var _ = new TopLevelConfiguration(yamlString);
     } on ConfigurationException catch (e) {
-      expect(e.message, "TopLevelConfiguration contained extra keys: extraKey");
+      expect(e.message, "TopLevelConfiguration contained unexpected keys: extraKey");
     }
 
     try {
@@ -122,7 +122,7 @@ void main() {
       };
       var _ = new TopLevelConfiguration.fromMap(asMap);
     } on ConfigurationException catch (e) {
-      expect(e.message, "TopLevelConfiguration contained extra keys: extraKey");
+      expect(e.message, "TopLevelConfiguration contained unexpected keys: extraKey");
     }
   });
 
