@@ -62,30 +62,26 @@ abstract class ConfigurationItem {
     var reflectedThis = reflect(this);
 
     if (allowsExtraKeys == null) {
-      ConfigurationItemAttribute attribute = reflectedThis.type.metadata
-          .firstWhere((im) => im.type.isSubtypeOf(reflectType(ConfigurationItemAttribute)), orElse: () => null)
-          ?.reflectee;
-
-      allowsExtraKeys = attribute != null && attribute.allowsExtraKeys;
+      allowsExtraKeys = _canHaveExtraKeys(reflectedThis.type);
     }
 
     var properties = new List<String>();
 
-    reflectedThis.type.declarations.forEach((sym, decl) {
-      if (decl is! VariableMirror) {
+    reflectedThis.type.declarations.forEach((symbol, declaration) {
+      if (declaration is! VariableMirror) {
         return;
       }
 
-      VariableMirror variableMirror = decl;
-      String propertyName = MirrorSystem.getName(sym);
+      VariableMirror variableMirror = declaration;
+      String propertyName = MirrorSystem.getName(symbol);
       properties.add(propertyName);
 
       var value = items[propertyName];
 
       if (value != null) {
-        _readConfigurationItem(sym, variableMirror, value);
-      } else if (_isVariableRequired(sym, variableMirror)) {
-        throw new ConfigurationException("${MirrorSystem.getName(sym)} is required but was not found in configuration.");
+        _readConfigurationItem(symbol, variableMirror, value);
+      } else if (_isVariableRequired(symbol, variableMirror)) {
+        throw new ConfigurationException("${propertyName} is required but was not found in configuration.");
       }
     });
 
@@ -119,12 +115,12 @@ abstract class ConfigurationItem {
     return attribute == null || attribute.type == ConfigurationItemAttributeType.required;
   }
 
-  bool _canVariableHaveExtraKeys(VariableMirror m) {
+  bool _canHaveExtraKeys(DeclarationMirror m) {
     ConfigurationItemAttribute attribute = m.metadata
         .firstWhere((im) => im.type.isSubtypeOf(reflectType(ConfigurationItemAttribute)), orElse: () => null)
         ?.reflectee;
 
-    return attribute != null && attribute.allowsExtraKeys == true;
+    return attribute?.allowsExtraKeys ?? false ;
   }
 
   void _readConfigurationItem(Symbol symbol, VariableMirror mirror, dynamic value) {
@@ -146,11 +142,11 @@ abstract class ConfigurationItem {
 
     var decodedValue = null;
     if (mirror.type.isSubtypeOf(reflectType(ConfigurationItem))) {
-      decodedValue = _decodedConfigurationItem(mirror.type, value, _canVariableHaveExtraKeys(mirror));
+      decodedValue = _decodedConfigurationItem(mirror.type, value, _canHaveExtraKeys(mirror));
     } else if (mirror.type.isSubtypeOf(reflectType(List))) {
-      decodedValue = _decodedConfigurationList(mirror.type, value, _canVariableHaveExtraKeys(mirror));
+      decodedValue = _decodedConfigurationList(mirror.type, value, _canHaveExtraKeys(mirror));
     } else if (mirror.type.isSubtypeOf(reflectType(Map))) {
-      decodedValue = _decodedConfigurationMap(mirror.type, value, _canVariableHaveExtraKeys(mirror));
+      decodedValue = _decodedConfigurationMap(mirror.type, value, _canHaveExtraKeys(mirror));
     } else {
       decodedValue = value;
     }
