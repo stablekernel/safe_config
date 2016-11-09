@@ -10,12 +10,12 @@ abstract class ConfigurationItem {
   }
 
   ConfigurationItem.fromMap(Map map) {
-    readFromMap(map);
+    readFromMap(map as Map<String, dynamic>);
   }
 
   /// Loads a YAML-compliant string into this instance's properties.
   ConfigurationItem.fromString(String contents) {
-    var config = loadYaml(contents);
+    var config = loadYaml(contents) as Map<String, dynamic>;
     readFromMap(config);
   }
 
@@ -25,27 +25,17 @@ abstract class ConfigurationItem {
   /// If [name] is an absolute path, it will ignore the current working directory.
   ConfigurationItem.fromFile(String name) : this.fromString(new File(name).readAsStringSync());
 
-  Map<String, dynamic> extraKeys;
-
   List<String> get _missingRequiredValues {
     var reflectedThis = reflect(this);
-    return reflectedThis.type.declarations.values
-        .where((dm) {
-          if (dm is! VariableMirror) {
-            return false;
-          }
 
-          ConfigurationItemAttribute metadata = dm.metadata.firstWhere((im) => im.reflectee is ConfigurationItemAttribute,
-              orElse: () => reflect(requiredConfiguration)).reflectee;
-          return metadata.type == ConfigurationItemAttributeType.required;
-        })
-        .map((dm) => dm as VariableMirror)
+    return _variableDeclarations(reflectedThis.type)
+        .where((VariableMirror vm) => _isVariableRequired(vm))
         .where((VariableMirror vm) => reflectedThis.getField(vm.simpleName).reflectee == null)
         .map((VariableMirror vm) => MirrorSystem.getName(vm.simpleName))
         .toList();
   }
 
-  void _setSubItem(dynamic item, {bool allowsExtraKeys: false}) {
+  void set _subItem(dynamic item) {
     if (item is! Map) {
       decode(item);
 
@@ -54,46 +44,31 @@ abstract class ConfigurationItem {
         throw new ConfigurationException("Missing items for ${this.runtimeType}: $missing.");
       }
     } else {
-      readFromMap(item, allowsExtraKeys: allowsExtraKeys);
+      readFromMap(item as Map<String, dynamic>);
     }
   }
 
-  void readFromMap(Map<String, dynamic> items, {bool allowsExtraKeys: null}) {
+  void readFromMap(Map<String, dynamic> items) {
     var reflectedThis = reflect(this);
-
-    if (allowsExtraKeys == null) {
-      allowsExtraKeys = _canHaveExtraKeys(reflectedThis.type);
-    }
-
     var properties = new List<String>();
 
-    reflectedThis.type.declarations.forEach((symbol, declaration) {
-      if (declaration is! VariableMirror) {
-        return;
-      }
-
-      VariableMirror variableMirror = declaration;
-      String propertyName = MirrorSystem.getName(symbol);
+    _variableDeclarations(reflectedThis.type).forEach((variableMirror) {
+      String propertyName = MirrorSystem.getName(variableMirror.simpleName);
       properties.add(propertyName);
 
       var value = items[propertyName];
 
       if (value != null) {
-        _readConfigurationItem(symbol, variableMirror, value);
-      } else if (_isVariableRequired(symbol, variableMirror)) {
+        _readConfigurationItem(variableMirror, value);
+      } else if (_isVariableRequired(variableMirror)) {
         throw new ConfigurationException("${propertyName} is required but was not found in configuration.");
       }
     });
 
-    var unnecessaryKeys = items.keys.where((key) => !properties.contains(key));
+    var extraKeys = items.keys.where((key) => !properties.contains(key));
 
-    if (unnecessaryKeys.length > 0) {
-      if (allowsExtraKeys) {
-        extraKeys = new Map<String, dynamic>();
-        unnecessaryKeys.forEach((key) => extraKeys[key] = items[key]);
-      } else {
-        throw new ConfigurationException("${this.runtimeType} does not allow extra keys, but configuration contained extra keys: ${unnecessaryKeys.join(", ")}");
-      }
+    if (extraKeys.length > 0) {
+      throw new ConfigurationException("${this.runtimeType} contained extra keys: ${extraKeys.join(", ")}");
     }
   }
 
@@ -107,7 +82,7 @@ abstract class ConfigurationItem {
     throw new ConfigurationException("${this.runtimeType} attempted to decode value $anything, but did not override decode.");
   }
 
-  bool _isVariableRequired(Symbol symbol, VariableMirror m) {
+  bool _isVariableRequired(VariableMirror m) {
     ConfigurationItemAttribute attribute = m.metadata
         .firstWhere((im) => im.type.isSubtypeOf(reflectType(ConfigurationItemAttribute)), orElse: () => null)
         ?.reflectee;
@@ -115,15 +90,20 @@ abstract class ConfigurationItem {
     return attribute == null || attribute.type == ConfigurationItemAttributeType.required;
   }
 
-  bool _canHaveExtraKeys(DeclarationMirror m) {
-    ConfigurationItemAttribute attribute = m.metadata
-        .firstWhere((im) => im.type.isSubtypeOf(reflectType(ConfigurationItemAttribute)), orElse: () => null)
-        ?.reflectee;
+  List<VariableMirror> _variableDeclarations(ClassMirror type) {
+    var declarations = new List<VariableMirror>();
 
-    return attribute?.allowsExtraKeys ?? false ;
+    while (type != null) {
+      declarations.addAll(type.declarations.values
+          .where((dm) => dm is VariableMirror)
+          .map((dm) => dm as VariableMirror));
+      type = type.superclass;
+    }
+
+    return declarations;
   }
 
-  void _readConfigurationItem(Symbol symbol, VariableMirror mirror, dynamic value) {
+  void _readConfigurationItem(VariableMirror mirror, dynamic value) {
     var reflectedThis = reflect(this);
 
     if (value is String && value.startsWith("\$")) {
@@ -142,25 +122,25 @@ abstract class ConfigurationItem {
 
     var decodedValue = null;
     if (mirror.type.isSubtypeOf(reflectType(ConfigurationItem))) {
-      decodedValue = _decodedConfigurationItem(mirror.type, value, _canHaveExtraKeys(mirror));
+      decodedValue = _decodedConfigurationItem(mirror.type, value);
     } else if (mirror.type.isSubtypeOf(reflectType(List))) {
-      decodedValue = _decodedConfigurationList(mirror.type, value, _canHaveExtraKeys(mirror));
+      decodedValue = _decodedConfigurationList(mirror.type, value);
     } else if (mirror.type.isSubtypeOf(reflectType(Map))) {
-      decodedValue = _decodedConfigurationMap(mirror.type, value, _canHaveExtraKeys(mirror));
+      decodedValue = _decodedConfigurationMap(mirror.type, value);
     } else {
       decodedValue = value;
     }
 
-    reflectedThis.setField(symbol, decodedValue);
+    reflectedThis.setField(mirror.simpleName, decodedValue);
   }
 
-  dynamic _decodedConfigurationItem(TypeMirror typeMirror, dynamic value, bool allowsExtraKeys) {
+  dynamic _decodedConfigurationItem(TypeMirror typeMirror, dynamic value) {
     ConfigurationItem newInstance = (typeMirror as ClassMirror).newInstance(new Symbol(""), []).reflectee;
-    newInstance._setSubItem(value, allowsExtraKeys: allowsExtraKeys);
+    newInstance._subItem = value;
     return newInstance;
   }
 
-  List<dynamic> _decodedConfigurationList(TypeMirror typeMirror, YamlList value, bool allowsExtraKeys) {
+  List<dynamic> _decodedConfigurationList(TypeMirror typeMirror, YamlList value) {
     var decoder = (v) {
       return v;
     };
@@ -168,8 +148,8 @@ abstract class ConfigurationItem {
     if (typeMirror.typeArguments.first.isSubtypeOf(reflectType(ConfigurationItem))) {
       var innerClassMirror = typeMirror.typeArguments.first as ClassMirror;
       decoder = (v) {
-        ConfigurationItem newInstance = (innerClassMirror as ClassMirror).newInstance(new Symbol(""), []).reflectee;
-        newInstance._setSubItem(v, allowsExtraKeys: allowsExtraKeys);
+        ConfigurationItem newInstance = innerClassMirror.newInstance(new Symbol(""), []).reflectee;
+        newInstance._subItem = v;
         return newInstance;
       };
     }
@@ -177,7 +157,7 @@ abstract class ConfigurationItem {
     return value.map(decoder).toList();
   }
 
-  Map<String, dynamic> _decodedConfigurationMap(TypeMirror typeMirror, YamlMap value, bool allowsExtraKeys) {
+  Map<String, dynamic> _decodedConfigurationMap(TypeMirror typeMirror, YamlMap value) {
     var decoder = (v) {
       return v;
     };
@@ -185,8 +165,8 @@ abstract class ConfigurationItem {
     if (typeMirror.typeArguments.last.isSubtypeOf(reflectType(ConfigurationItem))) {
       var innerClassMirror = typeMirror.typeArguments.last as ClassMirror;
       decoder = (v) {
-        ConfigurationItem newInstance = (innerClassMirror as ClassMirror).newInstance(new Symbol(""), []).reflectee;
-        newInstance._setSubItem(v, allowsExtraKeys: allowsExtraKeys);
+        ConfigurationItem newInstance = innerClassMirror.newInstance(new Symbol(""), []).reflectee;
+        newInstance._subItem = v;
         return newInstance;
       };
     }
@@ -195,7 +175,7 @@ abstract class ConfigurationItem {
     value.keys.forEach((k) {
       map[k] = decoder(value[k]);
     });
-    return map;
+    return map as Map<String, dynamic>;
   }
 
   dynamic noSuchMethod(Invocation i) {
@@ -216,10 +196,9 @@ enum ConfigurationItemAttributeType {
 ///
 /// See [ConfigurationItemAttributeType].
 class ConfigurationItemAttribute {
-  const ConfigurationItemAttribute(this.type, {this.allowsExtraKeys: false});
+  const ConfigurationItemAttribute(this.type);
 
   final ConfigurationItemAttributeType type;
-  final bool allowsExtraKeys;
 }
 
 /// A [ConfigurationItemAttribute] for required properties.
@@ -227,9 +206,6 @@ const ConfigurationItemAttribute requiredConfiguration = const ConfigurationItem
 
 /// A [ConfigurationItemAttribute] for optional properties.
 const ConfigurationItemAttribute optionalConfiguration = const ConfigurationItemAttribute(ConfigurationItemAttributeType.optional);
-
-/// A [ConfigurationItemAttribute] for sub-configurations that allow extra keys.
-const ConfigurationItemAttribute allowsExtraKeysConfiguration = const ConfigurationItemAttribute(ConfigurationItemAttributeType.required, allowsExtraKeys: true);
 
 /// Thrown when [ConfigurationItem]s encounter an error.
 class ConfigurationException {
