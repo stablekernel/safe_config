@@ -44,48 +44,86 @@ void main() {
     expect(t.database.port, 5000);
   });
 
-  test("Extra property", () {
+  test("Configuration subclasses success case", () {
     var yamlString =
         "port: 80\n"
-        "name: foobar\n"
-        "extraKey: 2\n"
+        "extraValue: 2\n"
         "database:\n"
         "  host: stablekernel.com\n"
         "  username: bob\n"
         "  password: fred\n"
         "  databaseName: dbname\n"
-        "  extraKey: 2\n"
-        "  port: 5000";
+        "  port: 5000\n"
+        "  extraDatabaseValue: 3";
 
-    var t = new TopLevelConfiguration(yamlString);
+    var t = new ConfigurationSubclass(yamlString);
     expect(t.port, 80);
-    expect(t.name, "foobar");
+    expect(t.extraValue, 2);
     expect(t.database.host, "stablekernel.com");
     expect(t.database.username, "bob");
     expect(t.database.password, "fred");
     expect(t.database.databaseName, "dbname");
     expect(t.database.port, 5000);
+    expect(t.database.extraDatabaseValue, 3);
 
     var asMap = {
       "port" : 80,
-      "name" : "foobar",
-      "extraKey" : 2,
+      "extraValue" : 2,
       "database" : {
         "host" : "stablekernel.com",
         "username" : "bob",
         "password" : "fred",
         "databaseName" : "dbname",
-        "port" : 5000
+        "port" : 5000,
+        "extraDatabaseValue" : 3
       }
     };
-    t = new TopLevelConfiguration.fromMap(asMap);
+    t = new ConfigurationSubclass.fromMap(asMap);
     expect(t.port, 80);
-    expect(t.name, "foobar");
+    expect(t.extraValue, 2);
     expect(t.database.host, "stablekernel.com");
     expect(t.database.username, "bob");
     expect(t.database.password, "fred");
     expect(t.database.databaseName, "dbname");
     expect(t.database.port, 5000);
+    expect(t.database.extraDatabaseValue, 3);
+  });
+
+  test("Extra property", () {
+    try {
+      var yamlString =
+          "port: 80\n"
+          "name: foobar\n"
+          "extraKey: 2\n"
+          "database:\n"
+          "  host: stablekernel.com\n"
+          "  username: bob\n"
+          "  password: fred\n"
+          "  databaseName: dbname\n"
+          "  port: 5000";
+
+      var _ = new TopLevelConfiguration(yamlString);
+    } on ConfigurationException catch (e) {
+      expect(e.message, "TopLevelConfiguration contained unexpected keys: extraKey");
+    }
+
+    try {
+      var asMap = {
+        "port" : 80,
+        "name" : "foobar",
+        "extraKey" : 2,
+        "database" : {
+          "host" : "stablekernel.com",
+          "username" : "bob",
+          "password" : "fred",
+          "databaseName" : "dbname",
+          "port" : 5000
+        }
+      };
+      var _ = new TopLevelConfiguration.fromMap(asMap);
+    } on ConfigurationException catch (e) {
+      expect(e.message, "TopLevelConfiguration contained unexpected keys: extraKey");
+    }
   });
 
   test("Missing required top-level explicit", () {
@@ -107,7 +145,6 @@ void main() {
     try {
       var asMap = {
         "name" : "foobar",
-        "extraKey" : 2,
         "database" : {
           "host" : "stablekernel.com",
           "username" : "bob",
@@ -140,6 +177,154 @@ void main() {
       var _ = new TopLevelConfiguration.fromMap(asMap);
     } on ConfigurationException catch (e) {
       expect(e.message, "database is required but was not found in configuration.");
+    }
+  });
+
+  test("Missing required top-level from superclass", () {
+    try {
+      var yamlString =
+          "name: foobar\n"
+          "extraValue: 2\n"
+          "database:\n"
+          "  host: stablekernel.com\n"
+          "  username: bob\n"
+          "  password: fred\n"
+          "  databaseName: dbname\n"
+          "  port: 5000\n"
+          "  extraDatabaseValue: 3";
+
+      var _ = new ConfigurationSubclass(yamlString);
+    } on ConfigurationException catch (e) {
+      expect(e.message, "port is required but was not found in configuration.");
+    }
+
+    try {
+      var asMap = {
+        "name" : "foobar",
+        "extraValue" : 2,
+        "database" : {
+          "host" : "stablekernel.com",
+          "username" : "bob",
+          "password" : "fred",
+          "databaseName" : "dbname",
+          "port" : 5000,
+          "extraDatabaseValue" : 3
+        }
+      };
+      var _ = new ConfigurationSubclass.fromMap(asMap);
+    } on ConfigurationException catch (e) {
+      expect(e.message, "port is required but was not found in configuration.");
+    }
+  });
+
+  test("Missing required top-level from subclass", () {
+    try {
+      var yamlString =
+          "name: foobar\n"
+          "port: 80\n"
+          "database:\n"
+          "  host: stablekernel.com\n"
+          "  username: bob\n"
+          "  password: fred\n"
+          "  databaseName: dbname\n"
+          "  port: 5000\n"
+          "  extraDatabaseValue: 3";
+
+      var _ = new ConfigurationSubclass(yamlString);
+    } on ConfigurationException catch (e) {
+      expect(e.message, "extraValue is required but was not found in configuration.");
+    }
+
+    try {
+      var asMap = {
+        "name" : "foobar",
+        "port" : 80,
+        "database" : {
+          "host" : "stablekernel.com",
+          "username" : "bob",
+          "password" : "fred",
+          "databaseName" : "dbname",
+          "port" : 5000,
+          "extraDatabaseValue" : 3
+        }
+      };
+      var _ = new ConfigurationSubclass.fromMap(asMap);
+    } on ConfigurationException catch (e) {
+      expect(e.message, "extraValue is required but was not found in configuration.");
+    }
+  });
+
+  test("Missing required nested property from superclass", () {
+    try {
+      var yamlString =
+          "port: 80\n"
+          "name: foobar\n"
+          "extraValue: 2\n"
+          "database:\n"
+          "  host: stablekernel.com\n"
+          "  username: bob\n"
+          "  password: fred\n"
+          "  databaseName: dbname\n"
+          "  extraDatabaseValue: 3";
+
+      var _ = new ConfigurationSubclass(yamlString);
+    } on ConfigurationException catch (e) {
+      expect(e.message, "port is required but was not found in configuration.");
+    }
+
+    try {
+      var asMap = {
+        "port" : 80,
+        "name" : "foobar",
+        "extraValue" : 2,
+        "database" : {
+          "host" : "stablekernel.com",
+          "username" : "bob",
+          "password" : "fred",
+          "databaseName" : "dbname",
+          "extraDatabaseValue" : 3
+        }
+      };
+      var _ = new ConfigurationSubclass.fromMap(asMap);
+    } on ConfigurationException catch (e) {
+      expect(e.message, "port is required but was not found in configuration.");
+    }
+  });
+
+  test("Missing required nested property from subclass", () {
+    try {
+      var yamlString =
+          "port: 80\n"
+          "name: foobar\n"
+          "extraValue: 2\n"
+          "database:\n"
+          "  host: stablekernel.com\n"
+          "  username: bob\n"
+          "  password: fred\n"
+          "  databaseName: dbname\n"
+          "  port: 5000\n";
+
+      var _ = new ConfigurationSubclass(yamlString);
+    } on ConfigurationException catch (e) {
+      expect(e.message, "extraDatabaseValue is required but was not found in configuration.");
+    }
+
+    try {
+      var asMap = {
+        "port" : 80,
+        "name" : "foobar",
+        "extraValue" : 2,
+        "database" : {
+          "host" : "stablekernel.com",
+          "username" : "bob",
+          "password" : "fred",
+          "databaseName" : "dbname",
+          "port" : 5000,
+        }
+      };
+      var _ = new ConfigurationSubclass.fromMap(asMap);
+    } on ConfigurationException catch (e) {
+      expect(e.message, "extraDatabaseValue is required but was not found in configuration.");
     }
   });
 
@@ -426,6 +611,34 @@ class TopLevelConfiguration extends ConfigurationItem {
   String name;
 
   DatabaseConnectionConfiguration database;
+}
+
+class DatabaseConfigurationSubclass extends DatabaseConnectionConfiguration {
+  DatabaseConfigurationSubclass();
+
+  int extraDatabaseValue;
+}
+
+class ConfigurationSuperclass extends ConfigurationItem {
+  ConfigurationSuperclass(String contents) : super.fromString(contents);
+  ConfigurationSuperclass.fromFile(String fileName) : super.fromFile(fileName);
+  ConfigurationSuperclass.fromMap(Map map) : super.fromMap(map);
+
+  @requiredConfiguration
+  int port;
+
+  @optionalConfiguration
+  String name;
+}
+
+class ConfigurationSubclass extends ConfigurationSuperclass {
+  ConfigurationSubclass(String contents) : super(contents);
+  ConfigurationSubclass.fromFile(String fileName) : super.fromFile(fileName);
+  ConfigurationSubclass.fromMap(Map map) : super.fromMap(map);
+
+  int extraValue;
+
+  DatabaseConfigurationSubclass database;
 }
 
 class SpecialInfo extends ConfigurationItem {

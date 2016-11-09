@@ -10,12 +10,12 @@ abstract class ConfigurationItem {
   }
 
   ConfigurationItem.fromMap(Map map) {
-    readFromMap(map);
+    readFromMap(map as Map<String, dynamic>);
   }
 
   /// Loads a YAML-compliant string into this instance's properties.
   ConfigurationItem.fromString(String contents) {
-    var config = loadYaml(contents);
+    var config = loadYaml(contents) as Map<String, dynamic>;
     readFromMap(config);
   }
 
@@ -27,17 +27,9 @@ abstract class ConfigurationItem {
 
   List<String> get _missingRequiredValues {
     var reflectedThis = reflect(this);
-    return reflectedThis.type.declarations.values
-        .where((dm) {
-          if (dm is! VariableMirror) {
-            return false;
-          }
 
-          ConfigurationItemAttribute metadata = dm.metadata.firstWhere((im) => im.reflectee is ConfigurationItemAttribute,
-              orElse: () => reflect(requiredConfiguration)).reflectee;
-          return metadata.type == ConfigurationItemAttributeType.required;
-        })
-        .map((dm) => dm as VariableMirror)
+    return _variableDeclarations(reflectedThis.type)
+        .where((VariableMirror vm) => _isVariableRequired(vm))
         .where((VariableMirror vm) => reflectedThis.getField(vm.simpleName).reflectee == null)
         .map((VariableMirror vm) => MirrorSystem.getName(vm.simpleName))
         .toList();
@@ -52,27 +44,32 @@ abstract class ConfigurationItem {
         throw new ConfigurationException("Missing items for ${this.runtimeType}: $missing.");
       }
     } else {
-      readFromMap(item);
+      readFromMap(item as Map<String, dynamic>);
     }
   }
 
   void readFromMap(Map<String, dynamic> items) {
     var reflectedThis = reflect(this);
+    var properties = new List<String>();
 
-    reflectedThis.type.declarations.forEach((sym, decl) {
-      if (decl is! VariableMirror) {
-        return;
-      }
+    _variableDeclarations(reflectedThis.type).forEach((variableMirror) {
+      String propertyName = MirrorSystem.getName(variableMirror.simpleName);
+      properties.add(propertyName);
 
-      VariableMirror variableMirror = decl;
-      var value = items[MirrorSystem.getName(sym)];
+      var value = items[propertyName];
 
       if (value != null) {
-        _readConfigurationItem(sym, variableMirror, value);
-      } else if (_isVariableRequired(sym, variableMirror)) {
-        throw new ConfigurationException("${MirrorSystem.getName(sym)} is required but was not found in configuration.");
+        _readConfigurationItem(variableMirror, value);
+      } else if (_isVariableRequired(variableMirror)) {
+        throw new ConfigurationException("${propertyName} is required but was not found in configuration.");
       }
     });
+
+    var unexpectedKeys = items.keys.where((key) => !properties.contains(key));
+
+    if (unexpectedKeys.length > 0) {
+      throw new ConfigurationException("${this.runtimeType} contained unexpected keys: ${unexpectedKeys.join(", ")}");
+    }
   }
 
   /// Subclasses may override this method to read from something that is not a Map.
@@ -85,7 +82,7 @@ abstract class ConfigurationItem {
     throw new ConfigurationException("${this.runtimeType} attempted to decode value $anything, but did not override decode.");
   }
 
-  bool _isVariableRequired(Symbol symbol, VariableMirror m) {
+  bool _isVariableRequired(VariableMirror m) {
     ConfigurationItemAttribute attribute = m.metadata
         .firstWhere((im) => im.type.isSubtypeOf(reflectType(ConfigurationItemAttribute)), orElse: () => null)
         ?.reflectee;
@@ -93,7 +90,20 @@ abstract class ConfigurationItem {
     return attribute == null || attribute.type == ConfigurationItemAttributeType.required;
   }
 
-  void _readConfigurationItem(Symbol symbol, VariableMirror mirror, dynamic value) {
+  List<VariableMirror> _variableDeclarations(ClassMirror type) {
+    var declarations = new List<VariableMirror>();
+
+    while (type != null) {
+      declarations.addAll(type.declarations.values
+          .where((dm) => dm is VariableMirror)
+          .map((dm) => dm as VariableMirror));
+      type = type.superclass;
+    }
+
+    return declarations;
+  }
+
+  void _readConfigurationItem(VariableMirror mirror, dynamic value) {
     var reflectedThis = reflect(this);
 
     if (value is String && value.startsWith("\$")) {
@@ -121,7 +131,7 @@ abstract class ConfigurationItem {
       decodedValue = value;
     }
 
-    reflectedThis.setField(symbol, decodedValue);
+    reflectedThis.setField(mirror.simpleName, decodedValue);
   }
 
   dynamic _decodedConfigurationItem(TypeMirror typeMirror, dynamic value) {
@@ -138,7 +148,7 @@ abstract class ConfigurationItem {
     if (typeMirror.typeArguments.first.isSubtypeOf(reflectType(ConfigurationItem))) {
       var innerClassMirror = typeMirror.typeArguments.first as ClassMirror;
       decoder = (v) {
-        ConfigurationItem newInstance = (innerClassMirror as ClassMirror).newInstance(new Symbol(""), []).reflectee;
+        ConfigurationItem newInstance = innerClassMirror.newInstance(new Symbol(""), []).reflectee;
         newInstance._subItem = v;
         return newInstance;
       };
@@ -155,7 +165,7 @@ abstract class ConfigurationItem {
     if (typeMirror.typeArguments.last.isSubtypeOf(reflectType(ConfigurationItem))) {
       var innerClassMirror = typeMirror.typeArguments.last as ClassMirror;
       decoder = (v) {
-        ConfigurationItem newInstance = (innerClassMirror as ClassMirror).newInstance(new Symbol(""), []).reflectee;
+        ConfigurationItem newInstance = innerClassMirror.newInstance(new Symbol(""), []).reflectee;
         newInstance._subItem = v;
         return newInstance;
       };
@@ -165,7 +175,7 @@ abstract class ConfigurationItem {
     value.keys.forEach((k) {
       map[k] = decoder(value[k]);
     });
-    return map;
+    return map as Map<String, dynamic>;
   }
 
   dynamic noSuchMethod(Invocation i) {
