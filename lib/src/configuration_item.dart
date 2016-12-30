@@ -95,7 +95,7 @@ abstract class ConfigurationItem {
 
     while (type != null) {
       declarations.addAll(type.declarations.values
-          .where((dm) => dm is VariableMirror)
+          .where((dm) => dm is VariableMirror && !dm.isStatic)
           .map((dm) => dm as VariableMirror));
       type = type.superclass;
     }

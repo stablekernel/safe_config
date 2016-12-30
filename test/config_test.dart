@@ -597,6 +597,12 @@ void main() {
     expect(values.testBoolean, true);
     expect(values.optionalDooDad, isNull);
   });
+
+  test("Static variables get ignored", () {
+    var yamlString = "value: 1";
+    var values = new StaticVariableConfiguration(yamlString);
+    expect(values.value, 1);
+  });
 }
 
 class TopLevelConfiguration extends ConfigurationItem {
@@ -668,4 +674,12 @@ class EnvironmentConfiguration extends ConfigurationItem {
 
   @optionalConfiguration
   String optionalDooDad;
+}
+
+class StaticVariableConfiguration extends ConfigurationItem {
+  static String staticVariable;
+
+  StaticVariableConfiguration(String contents) : super.fromString(contents);
+
+  int value;
 }
