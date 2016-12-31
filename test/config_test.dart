@@ -603,6 +603,13 @@ void main() {
     var values = new StaticVariableConfiguration(yamlString);
     expect(values.value, 1);
   });
+
+  test("Private variables get ignored", () {
+    var yamlString = "value: 1";
+    var values = new PrivateVariableConfiguration(yamlString);
+    expect(values.value, 1);
+    expect(values._privateVariable, null);
+  });
 }
 
 class TopLevelConfiguration extends ConfigurationItem {
@@ -681,5 +688,12 @@ class StaticVariableConfiguration extends ConfigurationItem {
 
   StaticVariableConfiguration(String contents) : super.fromString(contents);
 
+  int value;
+}
+
+class PrivateVariableConfiguration extends ConfigurationItem {
+  PrivateVariableConfiguration(String contents) : super.fromString(contents);
+
+  String _privateVariable;
   int value;
 }

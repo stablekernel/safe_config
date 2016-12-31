@@ -1,5 +1,9 @@
 # Changelog
 
+# 1.1.3
+
+- Ignore private variables declared in ConfigurationItem subclasses
+
 # 1.1.2
 
 - Ignore static variables declared in ConfigurationItem subclasses
