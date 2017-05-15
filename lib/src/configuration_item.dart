@@ -131,6 +131,11 @@ abstract class ConfigurationItem {
       decodedValue = value;
     }
 
+    // Calling the validation method for fields annotated with @ValidateWith
+    mirror.metadata
+        .where((im) => im.type.isSubclassOf(reflectClass(ValidateWith)))
+        .forEach((im) => reflectedThis.invoke((im.reflectee as ValidateWith).validationMethod, [decodedValue]));
+
     reflectedThis.setField(mirror.simpleName, decodedValue);
   }
 
@@ -206,6 +211,13 @@ const ConfigurationItemAttribute requiredConfiguration = const ConfigurationItem
 
 /// A [ConfigurationItemAttribute] for optional properties.
 const ConfigurationItemAttribute optionalConfiguration = const ConfigurationItemAttribute(ConfigurationItemAttributeType.optional);
+
+/// [ConfigurationItem] properties' values could be validated with instance methods indicated with the annotation @ValidateWith
+class ValidateWith {
+  final Symbol validationMethod;
+
+  const ValidateWith(this.validationMethod);
+}
 
 /// Thrown when [ConfigurationItem]s encounter an error.
 class ConfigurationException {
