@@ -64,6 +64,11 @@ abstract class ConfigurationItem {
         throw new ConfigurationException("${propertyName} is required but was not found in configuration.");
       }
     });
+    // validation of properties values
+    List<String> validationErrors = validate();
+    if (validationErrors.length > 0) {
+      throw new ConfigurationException("${this.runtimeType} invalid property: $validationErrors");
+    }
 
     var unexpectedKeys = items.keys.where((key) => !properties.contains(key));
 
@@ -82,6 +87,12 @@ abstract class ConfigurationItem {
     throw new ConfigurationException("${this.runtimeType} attempted to decode value $anything, but did not override decode.");
   }
 
+  /// Subclasses may override this method in order to validate the values of properties.
+  ///
+  /// This method is executed when an instance of [ConfigurationItem] is parsed.
+  /// If it returns a nonempty list, the parser will thrown a ConfigurationException.
+  List<String> validate() => [];
+
   bool _isVariableRequired(VariableMirror m) {
     ConfigurationItemAttribute attribute = m.metadata
         .firstWhere((im) => im.type.isSubtypeOf(reflectType(ConfigurationItemAttribute)), orElse: () => null)
@@ -99,7 +110,6 @@ abstract class ConfigurationItem {
           .map((dm) => dm as VariableMirror));
       type = type.superclass;
     }
-
     return declarations;
   }
 
@@ -130,11 +140,6 @@ abstract class ConfigurationItem {
     } else {
       decodedValue = value;
     }
-
-    // Calling the validation method for fields annotated with @ValidateWith
-    mirror.metadata
-        .where((im) => im.type.isSubclassOf(reflectClass(ValidateWith)))
-        .forEach((im) => reflectedThis.invoke((im.reflectee as ValidateWith).validationMethod, [decodedValue]));
 
     reflectedThis.setField(mirror.simpleName, decodedValue);
   }
@@ -211,13 +216,6 @@ const ConfigurationItemAttribute requiredConfiguration = const ConfigurationItem
 
 /// A [ConfigurationItemAttribute] for optional properties.
 const ConfigurationItemAttribute optionalConfiguration = const ConfigurationItemAttribute(ConfigurationItemAttributeType.optional);
-
-/// [ConfigurationItem] properties' values could be validated with instance methods indicated with the annotation @ValidateWith
-class ValidateWith {
-  final Symbol validationMethod;
-
-  const ValidateWith(this.validationMethod);
-}
 
 /// Thrown when [ConfigurationItem]s encounter an error.
 class ConfigurationException {

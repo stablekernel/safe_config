@@ -188,7 +188,7 @@ void main() {
 
       var _ = new TopLevelConfigurationWithValidation(yamlString);
     } on ConfigurationException catch (e) {
-      expect(e.message, "invalid port number.");
+      expect(e.message, "TopLevelConfigurationWithValidation invalid property: [port: 65536]");
     }
 
     try {
@@ -198,29 +198,7 @@ void main() {
       };
       var _ = new TopLevelConfigurationWithValidation.fromMap(asMap);
     } on ConfigurationException catch (e) {
-      expect(e.message, "invalid port number.");
-    }
-  });
-
-  test("Invalid value for property with two validations", () {
-    try {
-      var yamlString =
-          "name: foobar\n"
-          "port: 65535\n";
-
-      var _ = new TopLevelConfigurationWithTwoValidations(yamlString);
-    } on ConfigurationException catch (e) {
-      expect(e.message, "only well known ports are allowed.");
-    }
-
-    try {
-      var asMap = {
-        "name" : "foobar",
-        "port" : 65535
-      };
-      var _ = new TopLevelConfigurationWithTwoValidations.fromMap(asMap);
-    } on ConfigurationException catch (e) {
-      expect(e.message, "only well known ports are allowed.");
+      expect(e.message, "TopLevelConfigurationWithValidation invalid property: [port: 65536]");
     }
   });
 
@@ -386,7 +364,7 @@ void main() {
 
       var _ = new ConfigurationSubclassWithValidation(yamlString);
     } on ConfigurationException catch (e) {
-      expect(e.message, "invalid host.");
+      expect(e.message, "DatabaseConfigurationSubclassWithValidation invalid property: [host: not a host.com]");
     }
 
     try {
@@ -403,7 +381,7 @@ void main() {
       };
       var _ = new ConfigurationSubclassWithValidation.fromMap(asMap);
     } on ConfigurationException catch (e) {
-      expect(e.message, "invalid host.");
+      expect(e.message, "DatabaseConfigurationSubclassWithValidation invalid property: [host: not a host.com]");
     }
   });
 
@@ -711,36 +689,12 @@ class TopLevelConfigurationWithValidation extends ConfigurationItem {
   TopLevelConfigurationWithValidation.fromMap(Map map) : super.fromMap(map);
 
   @requiredConfiguration
-  @ValidateWith(#validatePortNumber)
   int port;
 
-  validatePortNumber(value) {
-    if(value < 0 || value > 65535)
-      throw new ConfigurationException("invalid port number.");
-  }
-
-  @optionalConfiguration
-  String name;
-}
-
-class TopLevelConfigurationWithTwoValidations extends ConfigurationItem {
-  TopLevelConfigurationWithTwoValidations(String contents) : super.fromString(contents);
-  TopLevelConfigurationWithTwoValidations.fromFile(String fileName) : super.fromFile(fileName);
-  TopLevelConfigurationWithTwoValidations.fromMap(Map map) : super.fromMap(map);
-
-  @requiredConfiguration
-  @ValidateWith(#validatePortNumber)
-  @ValidateWith(#validateOnlyWellKnownPorts)
-  int port;
-
-  validatePortNumber(value) {
-    if(value < 0 || value > 65535)
-      throw new ConfigurationException("invalid port number.");
-  }
-
-  validateOnlyWellKnownPorts(value) {
-    if(value > 1023)
-      throw new ConfigurationException("only well known ports are allowed.");
+  List<String> validate() {
+    if(port < 0 || port > 65535) {
+      return ["port: $port"];
+    }
   }
 
   @optionalConfiguration
@@ -786,13 +740,11 @@ class ConfigurationSubclassWithValidation extends ConfigurationSuperclass {
 class DatabaseConfigurationSubclassWithValidation extends DatabaseConnectionConfiguration {
   DatabaseConfigurationSubclassWithValidation();
 
-  @ValidateWith(#validateHost)
-  String host;
-
-  validateHost(value) {
+  List<String> validate() {
     RegExp validHost = new RegExp(r"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$");
-    if (!validHost.hasMatch(value))
-      throw new ConfigurationException("invalid host.");
+    if (!validHost.hasMatch(host)) {
+      return ["host: $host"];
+    }
   }
 }
 
