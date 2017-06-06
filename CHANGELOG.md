@@ -1,5 +1,9 @@
 # Changelog
 
+# 1.2.0
+
+- Allow `ConfigurationItem` to validate their values by overriding `validate` (Thanks to Denis Albuquerque, [@zidenis](https://github.com/zidenis))
+
 # 1.1.3
 
 - Ignore private variables declared in ConfigurationItem subclasses
