@@ -180,6 +180,28 @@ void main() {
     }
   });
 
+  test("Invalid value for top-level property", () {
+    try {
+      var yamlString =
+          "name: foobar\n"
+          "port: 65536\n";
+
+      var _ = new TopLevelConfigurationWithValidation(yamlString);
+    } on ConfigurationException catch (e) {
+      expect(e.message, "TopLevelConfigurationWithValidation invalid property: [port: 65536]");
+    }
+
+    try {
+      var asMap = {
+        "name" : "foobar",
+        "port" : 65536
+      };
+      var _ = new TopLevelConfigurationWithValidation.fromMap(asMap);
+    } on ConfigurationException catch (e) {
+      expect(e.message, "TopLevelConfigurationWithValidation invalid property: [port: 65536]");
+    }
+  });
+
   test("Missing required top-level from superclass", () {
     try {
       var yamlString =
@@ -325,6 +347,41 @@ void main() {
       var _ = new ConfigurationSubclass.fromMap(asMap);
     } on ConfigurationException catch (e) {
       expect(e.message, "extraDatabaseValue is required but was not found in configuration.");
+    }
+  });
+
+  test("Validation of the value of property from subclass", () {
+    try {
+      var yamlString =
+          "port: 80\n"
+          "name: foobar\n"
+          "database:\n"
+          "  host: not a host.com\n"
+          "  username: bob\n"
+          "  password: fred\n"
+          "  databaseName: dbname\n"
+          "  port: 5000\n";
+
+      var _ = new ConfigurationSubclassWithValidation(yamlString);
+    } on ConfigurationException catch (e) {
+      expect(e.message, "DatabaseConfigurationSubclassWithValidation invalid property: [host: not a host.com]");
+    }
+
+    try {
+      var asMap = {
+        "port" : 80,
+        "name" : "foobar",
+        "database" : {
+          "host" : "not a host.com",
+          "username" : "bob",
+          "password" : "fred",
+          "databaseName" : "dbname",
+          "port" : 5000,
+        }
+      };
+      var _ = new ConfigurationSubclassWithValidation.fromMap(asMap);
+    } on ConfigurationException catch (e) {
+      expect(e.message, "DatabaseConfigurationSubclassWithValidation invalid property: [host: not a host.com]");
     }
   });
 
@@ -626,6 +683,24 @@ class TopLevelConfiguration extends ConfigurationItem {
   DatabaseConnectionConfiguration database;
 }
 
+class TopLevelConfigurationWithValidation extends ConfigurationItem {
+  TopLevelConfigurationWithValidation(String contents) : super.fromString(contents);
+  TopLevelConfigurationWithValidation.fromFile(String fileName) : super.fromFile(fileName);
+  TopLevelConfigurationWithValidation.fromMap(Map map) : super.fromMap(map);
+
+  @requiredConfiguration
+  int port;
+
+  List<String> validate() {
+    if(port < 0 || port > 65535) {
+      return ["port: $port"];
+    }
+  }
+
+  @optionalConfiguration
+  String name;
+}
+
 class DatabaseConfigurationSubclass extends DatabaseConnectionConfiguration {
   DatabaseConfigurationSubclass();
 
@@ -652,6 +727,25 @@ class ConfigurationSubclass extends ConfigurationSuperclass {
   int extraValue;
 
   DatabaseConfigurationSubclass database;
+}
+
+class ConfigurationSubclassWithValidation extends ConfigurationSuperclass {
+  ConfigurationSubclassWithValidation(String contents) : super(contents);
+  ConfigurationSubclassWithValidation.fromFile(String fileName) : super.fromFile(fileName);
+  ConfigurationSubclassWithValidation.fromMap(Map map) : super.fromMap(map);
+
+  DatabaseConfigurationSubclassWithValidation database;
+}
+
+class DatabaseConfigurationSubclassWithValidation extends DatabaseConnectionConfiguration {
+  DatabaseConfigurationSubclassWithValidation();
+
+  List<String> validate() {
+    RegExp validHost = new RegExp(r"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$");
+    if (!validHost.hasMatch(host)) {
+      return ["host: $host"];
+    }
+  }
 }
 
 class SpecialInfo extends ConfigurationItem {
