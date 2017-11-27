@@ -1,5 +1,9 @@
 # Changelog
 
+# 1.2.1
+
+- Throws exception when parsing if environment variable does not exist and is required.
+
 # 1.2.0
 
 - Allow `ConfigurationItem` to validate their values by overriding `validate` (Thanks to Denis Albuquerque, [@zidenis](https://github.com/zidenis))
