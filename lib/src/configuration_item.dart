@@ -56,14 +56,21 @@ abstract class ConfigurationItem {
       String propertyName = MirrorSystem.getName(variableMirror.simpleName);
       properties.add(propertyName);
 
-      var value = items[propertyName];
+      if (!items.containsKey(propertyName)) {
+        if (_isVariableRequired(variableMirror)) {
+          throw new ConfigurationException("${propertyName} is required but was not found in configuration.");
+        }
+      } else {
+        var value = items[propertyName];
+        dynamic decodedValue = _parseConfigurationValue(variableMirror, value);
+        if (decodedValue == null && _isVariableRequired(variableMirror)) {
+          throw new ConfigurationException("${propertyName} is required but was not found in configuration.");
+        }
 
-      if (value != null) {
-        _readConfigurationItem(variableMirror, value);
-      } else if (_isVariableRequired(variableMirror)) {
-        throw new ConfigurationException("${propertyName} is required but was not found in configuration.");
+        reflectedThis.setField(variableMirror.simpleName, decodedValue);
       }
     });
+
     // validation of properties values
     List<String> validationErrors = validate();
     if (validationErrors.length > 0) {
@@ -113,35 +120,31 @@ abstract class ConfigurationItem {
     return declarations;
   }
 
-  void _readConfigurationItem(VariableMirror mirror, dynamic value) {
-    var reflectedThis = reflect(this);
-
+  dynamic _parseConfigurationValue(VariableMirror mirror, dynamic value) {
     if (value is String && value.startsWith("\$")) {
-      value = Platform.environment[value.substring(1)];
-
-      if (value == null) {
-        return;
+      final envKey = value.substring(1);
+      if (!Platform.environment.containsKey(envKey)) {
+        return null;
       }
 
+      final resolvedValue = Platform.environment[envKey];
       if (mirror.type.isSubtypeOf(reflectType(int))) {
-        value = int.parse(value);
+        return int.parse(resolvedValue);
       } else if (mirror.type.isSubtypeOf(reflectType(bool))) {
-        value = value == "true";
+        return resolvedValue == "true";
       }
+      return resolvedValue;
     }
 
-    var decodedValue = null;
     if (mirror.type.isSubtypeOf(reflectType(ConfigurationItem))) {
-      decodedValue = _decodedConfigurationItem(mirror.type, value);
+      return _decodedConfigurationItem(mirror.type, value);
     } else if (mirror.type.isSubtypeOf(reflectType(List))) {
-      decodedValue = _decodedConfigurationList(mirror.type, value);
+      return _decodedConfigurationList(mirror.type, value);
     } else if (mirror.type.isSubtypeOf(reflectType(Map))) {
-      decodedValue = _decodedConfigurationMap(mirror.type, value);
-    } else {
-      decodedValue = value;
+      return _decodedConfigurationMap(mirror.type, value);
     }
 
-    reflectedThis.setField(mirror.simpleName, decodedValue);
+    return value;
   }
 
   dynamic _decodedConfigurationItem(TypeMirror typeMirror, dynamic value) {

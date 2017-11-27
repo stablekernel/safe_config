@@ -674,6 +674,16 @@ void main() {
     expect(values.optionalDooDad, isNull);
   });
 
+  test("Missing environment variables throw required error", () {
+    var yamlString = "value: \$MISSING_ENV_VALUE";
+    try {
+      var _ = new EnvFail(yamlString);
+      expect(true, false);
+    } on ConfigurationException catch (e) {
+      expect(e.message, contains("value"));
+    }
+  });
+
   test("Static variables get ignored", () {
     var yamlString = "value: 1";
     var values = new StaticVariableConfiguration(yamlString);
@@ -813,4 +823,10 @@ class PrivateVariableConfiguration extends ConfigurationItem {
 
   String _privateVariable;
   int value;
+}
+
+class EnvFail extends ConfigurationItem {
+  EnvFail(String contents) : super.fromString(contents);
+
+  String value;
 }
