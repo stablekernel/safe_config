@@ -2,7 +2,7 @@
 
 # 1.2.1
 
-- Throws exception when parsing if environment variable does not exist.
+- Throws exception when parsing if environment variable does not exist and is required.
 
 # 1.2.0
 
