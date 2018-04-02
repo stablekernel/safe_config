@@ -121,27 +121,27 @@ abstract class ConfigurationItem {
   }
 
   dynamic _parseConfigurationValue(VariableMirror mirror, dynamic value) {
+    var resolvedValue = value;
     if (value is String && value.startsWith("\$")) {
       final envKey = value.substring(1);
       if (!Platform.environment.containsKey(envKey)) {
         return null;
       }
 
-      final resolvedValue = Platform.environment[envKey];
+      resolvedValue = Platform.environment[envKey];
       if (mirror.type.isSubtypeOf(reflectType(int))) {
         return int.parse(resolvedValue);
       } else if (mirror.type.isSubtypeOf(reflectType(bool))) {
         return resolvedValue == "true";
       }
-      return resolvedValue;
     }
 
     if (mirror.type.isSubtypeOf(reflectType(ConfigurationItem))) {
-      return _decodedConfigurationItem(mirror.type, value);
+      return _decodedConfigurationItem(mirror.type, resolvedValue);
     } else if (mirror.type.isSubtypeOf(reflectType(List))) {
-      return _decodedConfigurationList(mirror.type, value);
+      return _decodedConfigurationList(mirror.type, resolvedValue);
     } else if (mirror.type.isSubtypeOf(reflectType(Map))) {
-      return _decodedConfigurationMap(mirror.type, value);
+      return _decodedConfigurationMap(mirror.type, resolvedValue);
     }
 
     return value;
