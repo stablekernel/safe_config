@@ -127,13 +127,12 @@ abstract class ConfigurationItem {
         return null;
       }
 
-      final resolvedValue = Platform.environment[envKey];
+      value = Platform.environment[envKey];
       if (mirror.type.isSubtypeOf(reflectType(int))) {
-        return int.parse(resolvedValue);
+        return int.parse(value);
       } else if (mirror.type.isSubtypeOf(reflectType(bool))) {
-        return resolvedValue == "true";
+        return value == "true";
       }
-      return resolvedValue;
     }
 
     if (mirror.type.isSubtypeOf(reflectType(ConfigurationItem))) {

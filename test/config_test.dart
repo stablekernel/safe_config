@@ -696,6 +696,17 @@ void main() {
     expect(values.value, 1);
     expect(values._privateVariable, null);
   });
+
+  test("DatabaseConnectionConfiguration can be read from connection string", () {
+    print("This test must be run with environment variables of TEST_DB_ENV_VAR=postgres://user:password@host:5432/dbname");
+    final yamlString = "port: 80\ndatabase: \$TEST_DB_ENV_VAR";
+    final config = new TopLevelConfiguration(yamlString);
+    expect(config.database.username, "user");
+    expect(config.database.password, "password");
+    expect(config.database.host, "host");
+    expect(config.database.port, 5432);
+    expect(config.database.databaseName, "dbname");
+  });
 }
 
 class TopLevelConfiguration extends ConfigurationItem {

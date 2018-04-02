@@ -1,5 +1,9 @@
 # Changelog
 
+# 1.2.2
+
+- Fixes issue where environment variables could not be decoded as ConfigurationItems
+
 # 1.2.1
 
 - Throws exception when parsing if environment variable does not exist and is required.
