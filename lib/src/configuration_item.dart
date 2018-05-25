@@ -9,13 +9,13 @@ abstract class ConfigurationItem {
     
   }
 
-  ConfigurationItem.fromMap(Map map) {
-    readFromMap(map as Map<String, dynamic>);
+  ConfigurationItem.fromMap(Map<dynamic, dynamic> map) {
+    readFromMap(map);
   }
 
   /// Loads a YAML-compliant string into this instance's properties.
   ConfigurationItem.fromString(String contents) {
-    var config = loadYaml(contents) as Map<String, dynamic>;
+    var config = loadYaml(contents) as Map<dynamic, dynamic>;
     readFromMap(config);
   }
 
@@ -44,11 +44,11 @@ abstract class ConfigurationItem {
         throw new ConfigurationException("Missing items for ${this.runtimeType}: $missing.");
       }
     } else {
-      readFromMap(item as Map<String, dynamic>);
+      readFromMap(item as Map<dynamic, dynamic>);
     }
   }
 
-  void readFromMap(Map<String, dynamic> items) {
+  void readFromMap(Map<dynamic, dynamic> items) {
     var reflectedThis = reflect(this);
     var properties = new List<String>();
 
@@ -169,7 +169,7 @@ abstract class ConfigurationItem {
     return value.map(decoder).toList();
   }
 
-  Map<String, dynamic> _decodedConfigurationMap(TypeMirror typeMirror, YamlMap value) {
+  Map<dynamic, dynamic> _decodedConfigurationMap(TypeMirror typeMirror, YamlMap value) {
     var decoder = (v) {
       return v;
     };
@@ -187,7 +187,7 @@ abstract class ConfigurationItem {
     value.keys.forEach((k) {
       map[k] = decoder(value[k]);
     });
-    return map as Map<String, dynamic>;
+    return map;
   }
 
   dynamic noSuchMethod(Invocation i) {
