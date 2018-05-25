@@ -1,8 +1,7 @@
 language: dart
 sudo: required
 env:
-- TEST_VALUE=1 TEST_BOOL=true TEST_DB_ENV_VAR=postgres://user:password@host:5432/dbname
-- DART_VM_OPTIONS=--preview-dart-2
+- TEST_VALUE=1 TEST_BOOL=true TEST_DB_ENV_VAR=postgres://user:password@host:5432/dbname DART_VM_OPTIONS=--preview-dart-2
 script: pub run test -j 1 -r expanded
 branches:
   only:
