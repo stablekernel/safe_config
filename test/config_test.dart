@@ -471,7 +471,7 @@ void main() {
       var _ = new TopLevelConfiguration.fromString(yamlString);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("Missing"), contains("DatabaseConnectionConfiguration"), contains("'databaseName'")]));
+      expect(e.toString(), allOf([contains("Missing"), contains("DatabaseConfiguration"), contains("'databaseName'")]));
     }
 
     try {
@@ -483,7 +483,7 @@ void main() {
       var _ = new TopLevelConfiguration.fromMap(asMap);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("Missing"), contains("DatabaseConnectionConfiguration"), contains("'databaseName'")]));
+      expect(e.toString(), allOf([contains("Missing"), contains("DatabaseConfiguration"), contains("'databaseName'")]));
     }
   });
 
@@ -625,7 +625,7 @@ void main() {
       var _ = new OptionalEmbeddedContainer.fromString(yamlString);
       expect(true, false);
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("Missing"), contains("DatabaseConnectionConfiguration"), contains("'databaseName'")]));
+      expect(e.toString(), allOf([contains("Missing"), contains("DatabaseConfiguration"), contains("'databaseName'")]));
     }
   });
 
@@ -663,7 +663,7 @@ void main() {
     expect(values._privateVariable, null);
   });
 
-  test("DatabaseConnectionConfiguration can be read from connection string", () {
+  test("DatabaseConfiguration can be read from connection string", () {
     print(
         "This test must be run with environment variables of TEST_DB_ENV_VAR=postgres://user:password@host:5432/dbname");
     final yamlString = "port: 80\ndatabase: \$TEST_DB_ENV_VAR";

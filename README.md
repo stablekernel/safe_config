@@ -68,7 +68,7 @@ class ApplicationConfiguration extends Configuration {
 	
 	int port;
 	
-	DatabaseConnectionConfiguration userDatabase;
+	DatabaseConfiguration userDatabase;
 }
 ```
 

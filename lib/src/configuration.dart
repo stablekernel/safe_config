@@ -2,6 +2,8 @@ import 'package:yaml/yaml.dart';
 import 'dart:io';
 import 'dart:mirrors';
 
+import 'package:safe_config/src/default_configurations.dart';
+
 /// Subclasses of [Configuration] read YAML strings and files, assigning values from the YAML to properties
 /// of the subclass.
 abstract class Configuration {
@@ -26,7 +28,7 @@ abstract class Configuration {
 
   /// Subclasses may override this method to read from something that is not a Map.
   ///
-  /// Sometimes a configuration value can be represented in multiple ways. For example, a DatabaseConnectionConfiguration
+  /// Sometimes a configuration value can be represented in multiple ways. For example, a [DatabaseConfiguration]
   /// can be a [Map] of each component or a single URI [String] that can be decomposed into each component. Subclasses may override
   /// this method to provide this type of behavior. This method is executed when an instance of [Configuration] is ready to be parsed,
   /// but the value from the YAML is *not* a [Map]. By default, this method throws an exception.

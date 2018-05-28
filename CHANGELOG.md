@@ -1,5 +1,11 @@
 # Changelog
 
+# 2.0.0
+
+- Dart 2.0 compatability.
+- Rename `ConfigurationItem` -> `Configuration`.
+- Rename `DatabaseConnectionConfiguration` -> `DatabaseConfiguration`.
+
 # 1.2.2
 
 - Fixes issue where environment variables could not be decoded as ConfigurationItems
