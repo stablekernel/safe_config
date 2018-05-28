@@ -548,7 +548,7 @@ void main() {
     var file = new File("tmp.yaml");
     file.writeAsStringSync(yamlString);
 
-    var t = new TopLevelConfiguration.fromFile("tmp.yaml");
+    var t = new TopLevelConfiguration.fromFile(new File("tmp.yaml"));
     expect(t.port, 80);
     expect(t.name, "foobar");
     expect(t.database.host, "stablekernel.com");
@@ -681,7 +681,7 @@ class TopLevelConfiguration extends Configuration {
 
   TopLevelConfiguration.fromString(String contents) : super.fromString(contents);
 
-  TopLevelConfiguration.fromFile(String fileName) : super.fromFile(fileName);
+  TopLevelConfiguration.fromFile(File file) : super.fromFile(file);
 
   TopLevelConfiguration.fromMap(Map map) : super.fromMap(map);
 
@@ -699,7 +699,7 @@ class TopLevelConfigurationWithValidation extends Configuration {
 
   TopLevelConfigurationWithValidation.fromString(String contents) : super.fromString(contents);
 
-  TopLevelConfigurationWithValidation.fromFile(String fileName) : super.fromFile(fileName);
+  TopLevelConfigurationWithValidation.fromFile(File file) : super.fromFile(file);
 
   TopLevelConfigurationWithValidation.fromMap(Map map) : super.fromMap(map);
 
@@ -729,7 +729,7 @@ class ConfigurationSuperclass extends Configuration {
 
   ConfigurationSuperclass.fromString(String contents) : super.fromString(contents);
 
-  ConfigurationSuperclass.fromFile(String fileName) : super.fromFile(fileName);
+  ConfigurationSuperclass.fromFile(File file) : super.fromFile(file);
 
   ConfigurationSuperclass.fromMap(Map map) : super.fromMap(map);
 
@@ -745,7 +745,7 @@ class ConfigurationSubclass extends ConfigurationSuperclass {
 
   ConfigurationSubclass.fromString(String contents) : super.fromString(contents);
 
-  ConfigurationSubclass.fromFile(String fileName) : super.fromFile(fileName);
+  ConfigurationSubclass.fromFile(File file) : super.fromFile(file);
 
   ConfigurationSubclass.fromMap(Map map) : super.fromMap(map);
 
@@ -759,7 +759,7 @@ class ConfigurationSubclassWithValidation extends ConfigurationSuperclass {
 
   ConfigurationSubclassWithValidation.fromString(String contents) : super.fromString(contents);
 
-  ConfigurationSubclassWithValidation.fromFile(String fileName) : super.fromFile(fileName);
+  ConfigurationSubclassWithValidation.fromFile(File file) : super.fromFile(file);
 
   ConfigurationSubclassWithValidation.fromMap(Map map) : super.fromMap(map);
 

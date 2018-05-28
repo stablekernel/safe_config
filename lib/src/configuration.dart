@@ -24,7 +24,7 @@ abstract class Configuration {
   ///
   /// If [name] is a relative path, it will be interpreted relative to the current working directory.
   /// If [name] is an absolute path, it will ignore the current working directory.
-  Configuration.fromFile(String name) : this.fromString(new File(name).readAsStringSync());
+  Configuration.fromFile(File file) : this.fromString(file.readAsStringSync());
 
   /// Subclasses may override this method to read from something that is not a Map.
   ///
