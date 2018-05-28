@@ -1,13 +1,13 @@
-part of safe_config;
+import 'package:safe_config/src/configuration.dart';
 
-/// A [ConfigurationItem] to represent a database connection configuration.
-class DatabaseConnectionConfiguration extends ConfigurationItem {
+/// A [Configuration] to represent a database connection configuration.
+class DatabaseConfiguration extends Configuration {
 
   /// Default constructor.
-  DatabaseConnectionConfiguration();
+  DatabaseConfiguration();
 
   /// A named constructor that contains all of the properties of this instance.
-  DatabaseConnectionConfiguration.withConnectionInfo(this.username, this.password, this.host, this.port, this.databaseName, {bool temporary: false}) {
+  DatabaseConfiguration.withConnectionInfo(this.username, this.password, this.host, this.port, this.databaseName, {bool temporary: false}) {
     isTemporary = temporary;
   }
 
@@ -48,7 +48,8 @@ class DatabaseConnectionConfiguration extends ConfigurationItem {
 
   void decode(dynamic anything) {
     if (anything is! String) {
-      throw new ConfigurationException("Invalid decode value for ${this.runtimeType}, expected String, got ${anything.runtimeType}.");
+      throw new ConfigurationException(runtimeType,
+        "Invalid value '$anything'. Must be 'String' or 'Map'.");
     }
 
     var uri = Uri.parse(anything);
@@ -74,9 +75,8 @@ class DatabaseConnectionConfiguration extends ConfigurationItem {
   }
 }
 
-/// A [ConfigurationItem] to represent an external HTTP API.
-class APIConfiguration extends ConfigurationItem {
-
+/// A [Configuration] to represent an external HTTP API.
+class APIConfiguration extends Configuration {
   /// The base URL of the described API.
   ///
   /// This property is required.
