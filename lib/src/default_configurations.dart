@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:safe_config/src/configuration.dart';
 
 /// A [Configuration] to represent a database connection configuration.
@@ -5,6 +7,12 @@ class DatabaseConfiguration extends Configuration {
 
   /// Default constructor.
   DatabaseConfiguration();
+
+  DatabaseConfiguration.fromFile(File file) : super.fromFile(file);
+
+  DatabaseConfiguration.fromString(String yaml) : super.fromString(yaml);
+
+  DatabaseConfiguration.fromMap(Map<dynamic, dynamic> yaml) : super.fromMap(yaml);
 
   /// A named constructor that contains all of the properties of this instance.
   DatabaseConfiguration.withConnectionInfo(this.username, this.password, this.host, this.port, this.databaseName, {bool temporary: false}) {
@@ -77,6 +85,14 @@ class DatabaseConfiguration extends Configuration {
 
 /// A [Configuration] to represent an external HTTP API.
 class APIConfiguration extends Configuration {
+  APIConfiguration();
+
+  APIConfiguration.fromFile(File file) : super.fromFile(file);
+
+  APIConfiguration.fromString(String yaml) : super.fromString(yaml);
+
+  APIConfiguration.fromMap(Map<dynamic, dynamic> yaml) : super.fromMap(yaml);
+
   /// The base URL of the described API.
   ///
   /// This property is required.
