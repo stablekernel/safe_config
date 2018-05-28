@@ -9,10 +9,10 @@ This mapping ensures that the types of your YAML values are checked at runtime a
 you haven't typo'ed any YAML key names.
 
 Consider a case where you want to configure the port and the Server header of your application.
-You define a subclass of ConfigurationItem with those properties:
+You define a subclass of `Configuration` with those properties:
 
 ```
-class ApplicationConfiguration extends ConfigurationItem {
+class ApplicationConfiguration extends Configuration {
  	ApplicationConfiguration(String fileName) : 
  		super.fromFile(fileName);
 	
@@ -41,9 +41,9 @@ If serverHeader is not a String or missing, you will get an exception.
 
 ## Useful Usage
 
-You may mark properties in ConfigurationItems as optional.
+You may mark properties in `Configuration`s as optional.
 ```
-class ApplicationConfiguration extends ConfigurationItem {
+class ApplicationConfiguration extends Configuration {
  	ApplicationConfiguration(String fileName) : 
  		super.fromFile(fileName);
 	
@@ -56,13 +56,13 @@ class ApplicationConfiguration extends ConfigurationItem {
 
 If serverHeader is omitted from your YAML when read, its value will be null and no exception is thrown.
 
-There are two built-in ConfigurationItems, DatabaseConnectionConfiguration and APIConfiguration. These contain
+There are two built-in `Configuration`, `DatabaseConfiguration` and `APIConfiguration`. These contain
 typical properties for common configuration values.
 
-You may nest ConfigurationItems as deeply as you wish:
+You may nest `Configuration` as deeply as you wish:
 
 ```
-class ApplicationConfiguration extends ConfigurationItem {
+class ApplicationConfiguration extends Configuration {
  	ApplicationConfiguration(String fileName) : 
  		super.fromFile(fileName);
 	
@@ -81,13 +81,13 @@ userDatabase:
   port: 5432
 ```
 
-You may also use arrays and maps, for which the values can be primitive types or ConfigurationItem subclasses.
+You may also use arrays and maps, for which the values can be primitive types or `Configuration` subclasses.
 ```
-class ApplicationConfiguration extends ConfigurationItem {
+class ApplicationConfiguration extends Configuration {
  	ApplicationConfiguration(String fileName) : 
  		super.fromFile(fileName);
 		
-	Map<String, DatabaseConnectionConfiguration> databases;
+	Map<String, DatabaseConfiguration> databases;
 }
 ```
 
@@ -115,10 +115,10 @@ await database.connect(databaseOne.host,
 	databaseOne.databaseName);
 ```
 
-A configuration item may have multiple YAML representations. For example, a `DatabaseConnectionConfiguration` can be represented as a Map<String, dynamic> of each component (username, host, etc.). It may also be represented as a connection string, e.g. "postgres://user:password@host:port/database". You may allow this behavior by overriding `decode` in a subclass of `ConfigurationItem`:
+A configuration may have multiple YAML representations. For example, a `DatabaseConfiguration` can be represented as a `Map<String, dynamic>` of each component (username, host, etc.). It may also be represented as a connection string, e.g. "postgres://user:password@host:port/database". You may allow this behavior by overriding `decode` in a subclass of `Configuration`:
 
 ```
-class AuthorityConfiguration extends ConfigurationItem {
+class AuthorityConfiguration extends Configuration {
   String username;
   String password;
 
@@ -133,7 +133,7 @@ class AuthorityConfiguration extends ConfigurationItem {
 }
 ```
 
-This configuration item could be read in either of these two scenarios:
+This configuration could be read in either of these two scenarios:
 
 ```
 authority:
@@ -145,7 +145,7 @@ authority:
 authority: "Bob:Fred"
 ```
 
-Configuration items may also be redirected to use environment variables. For platforms like Heroku, this is valuable because configuration management is done through environment variables. To reference an environment variable in a configuration file, use the '$VARIABLE' syntax as a value:
+Configurations may also be redirected to use environment variables. To reference an environment variable in a configuration file, use the '$VARIABLE' syntax as a value:
 
 ```
 port: $PORT
