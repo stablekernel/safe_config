@@ -719,14 +719,26 @@ void main() {
   });
 
   test("Can read boolean values without quotes", () {
-    var yamlTrue = "value: true";
-    var yamlFalse = "value: false";
+    const yamlTrue = "value: true";
+    const yamlFalse = "value: false";
 
     final cfgTrue = BoolConfig.fromString(yamlTrue);
     expect(cfgTrue.value, true);
 
     final cfgFalse = BoolConfig.fromString(yamlFalse);
     expect(cfgFalse.value, false);
+  });
+
+  test("Default values can be assigned in field declaration", () {
+    const yaml = "required: foobar";
+    final cfg = DefaultValConfig.fromString(yaml);
+    expect(cfg.required, "foobar");
+    expect(cfg.value, "default");
+
+    const yaml2 = "required: foobar\nvalue: stuff";
+    final cfg2 = DefaultValConfig.fromString(yaml2);
+    expect(cfg2.required, "foobar");
+    expect(cfg2.value, "stuff");
   });
 }
 
@@ -903,4 +915,14 @@ class BoolConfig extends Configuration {
   BoolConfig.fromString(String contents) : super.fromString(contents);
 
   bool value;
+}
+
+class DefaultValConfig extends Configuration {
+  DefaultValConfig();
+  DefaultValConfig.fromString(String contents) : super.fromString(contents);
+
+  String required;
+
+  @optionalConfiguration
+  String value = "default";
 }
