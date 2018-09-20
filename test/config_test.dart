@@ -717,6 +717,17 @@ void main() {
       expect(e.toString(), contains("[item]"));
     }
   });
+
+  test("Can read boolean values without quotes", () {
+    var yamlTrue = "value: true";
+    var yamlFalse = "value: false";
+
+    final cfgTrue = BoolConfig.fromString(yamlTrue);
+    expect(cfgTrue.value, true);
+
+    final cfgFalse = BoolConfig.fromString(yamlFalse);
+    expect(cfgFalse.value, false);
+  });
 }
 
 class TopLevelConfiguration extends Configuration {
@@ -885,4 +896,11 @@ class EnvFail extends Configuration {
   EnvFail.fromString(String contents) : super.fromString(contents);
 
   String value;
+}
+
+class BoolConfig extends Configuration {
+  BoolConfig();
+  BoolConfig.fromString(String contents) : super.fromString(contents);
+
+  bool value;
 }
