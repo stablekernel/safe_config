@@ -1,5 +1,11 @@
 # Changelog
 
+# 2.0.1
+
+- Better error messaging for incorrect types
+- Allow 'bool' data type, fix regression in 2.0.0
+- Allow default values, fix regression in 2.0.0
+
 # 2.0.0
 
 - Dart 2.0 compatability.
