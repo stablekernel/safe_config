@@ -151,7 +151,11 @@ abstract class Configuration {
       }
       return value;
     } else if (type.isSubtypeOf(reflectType(bool))) {
-      return value == "true";
+      if (value is String) {
+        return value == "true";
+      }
+
+      return value;
     } else if (type.isSubtypeOf(reflectType(Configuration))) {
       return _decodeConfig(type, value);
     } else if (type.isSubtypeOf(reflectType(List))) {
