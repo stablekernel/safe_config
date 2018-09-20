@@ -1,6 +1,7 @@
-import 'package:test/test.dart';
-import 'package:safe_config/safe_config.dart';
 import 'dart:io';
+
+import 'package:safe_config/safe_config.dart';
+import 'package:test/test.dart';
 
 void main() {
   test("Success case", () {
@@ -13,7 +14,7 @@ void main() {
         "  databaseName: dbname\n"
         "  port: 5000";
 
-    var t = new TopLevelConfiguration.fromString(yamlString);
+    var t = TopLevelConfiguration.fromString(yamlString);
     expect(t.port, 80);
     expect(t.name, "foobar");
     expect(t.database.host, "stablekernel.com");
@@ -33,7 +34,7 @@ void main() {
         "port": 5000
       }
     };
-    t = new TopLevelConfiguration.fromMap(asMap);
+    t = TopLevelConfiguration.fromMap(asMap);
     expect(t.port, 80);
     expect(t.name, "foobar");
     expect(t.database.host, "stablekernel.com");
@@ -54,7 +55,7 @@ void main() {
         "  port: 5000\n"
         "  extraDatabaseValue: 3";
 
-    var t = new ConfigurationSubclass.fromString(yamlString);
+    var t = ConfigurationSubclass.fromString(yamlString);
     expect(t.port, 80);
     expect(t.extraValue, 2);
     expect(t.database.host, "stablekernel.com");
@@ -76,7 +77,7 @@ void main() {
         "extraDatabaseValue": 3
       }
     };
-    t = new ConfigurationSubclass.fromMap(asMap);
+    t = ConfigurationSubclass.fromMap(asMap);
     expect(t.port, 80);
     expect(t.extraValue, 2);
     expect(t.database.host, "stablekernel.com");
@@ -99,7 +100,7 @@ void main() {
           "  databaseName: dbname\n"
           "  port: 5000";
 
-      var _ = new TopLevelConfiguration.fromString(yamlString);
+      var _ = TopLevelConfiguration.fromString(yamlString);
       fail('unreachable');
     } on ConfigurationException catch (e) {
       expect(e.toString(), allOf([contains("TopLevelConfiguration"), contains("Extraneous"), contains("'extraKey'")]));
@@ -118,7 +119,7 @@ void main() {
           "port": 5000
         }
       };
-      var _ = new TopLevelConfiguration.fromMap(asMap);
+      var _ = TopLevelConfiguration.fromMap(asMap);
       fail('unreachable');
     } on ConfigurationException catch (e) {
       expect(e.toString(), allOf([contains("TopLevelConfiguration"), contains("Extraneous"), contains("'extraKey'")]));
@@ -135,7 +136,7 @@ void main() {
           "  databaseName: dbname\n"
           "  port: 5000";
 
-      var _ = new TopLevelConfiguration.fromString(yamlString);
+      var _ = TopLevelConfiguration.fromString(yamlString);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.toString(), allOf([contains("Missing required"), contains("TopLevelConfiguration"), contains("'port'")]));
@@ -152,7 +153,7 @@ void main() {
           "port": 5000
         }
       };
-      var _ = new TopLevelConfiguration.fromMap(asMap);
+      var _ = TopLevelConfiguration.fromMap(asMap);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.toString(), allOf([contains("Missing required"), contains("TopLevelConfiguration"), contains("'port'")]));
@@ -163,7 +164,7 @@ void main() {
     try {
       var yamlString = "port: 80\n"
           "name: foobar\n";
-      var _ = new TopLevelConfiguration.fromString(yamlString);
+      var _ = TopLevelConfiguration.fromString(yamlString);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.toString(), allOf([contains("Missing required"), contains("TopLevelConfiguration"), contains("'database'")]));
@@ -171,7 +172,7 @@ void main() {
 
     try {
       var asMap = {"port": 80, "name": "foobar"};
-      var _ = new TopLevelConfiguration.fromMap(asMap);
+      var _ = TopLevelConfiguration.fromMap(asMap);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.toString(), allOf([contains("Missing required"), contains("TopLevelConfiguration"), contains("'database'")]));
@@ -183,7 +184,7 @@ void main() {
       var yamlString = "name: foobar\n"
           "port: 65536\n";
 
-      var _ = new TopLevelConfigurationWithValidation.fromString(yamlString);
+      var _ = TopLevelConfigurationWithValidation.fromString(yamlString);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.toString(), contains("TopLevelConfigurationWithValidation"));
@@ -192,7 +193,7 @@ void main() {
 
     try {
       var asMap = {"name": "foobar", "port": 65536};
-      var _ = new TopLevelConfigurationWithValidation.fromMap(asMap);
+      var _ = TopLevelConfigurationWithValidation.fromMap(asMap);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.toString(), contains("TopLevelConfigurationWithValidation"));
@@ -212,7 +213,7 @@ void main() {
           "  port: 5000\n"
           "  extraDatabaseValue: 3";
 
-      var _ = new ConfigurationSubclass.fromString(yamlString);
+      var _ = ConfigurationSubclass.fromString(yamlString);
       fail("unreachable");
     } on ConfigurationException catch (e) {
       expect(e.toString(), allOf([contains("Missing required"), contains("ConfigurationSubclass"), contains("'port'")]));
@@ -231,7 +232,7 @@ void main() {
           "extraDatabaseValue": 3
         }
       };
-      var _ = new ConfigurationSubclass.fromMap(asMap);
+      var _ = ConfigurationSubclass.fromMap(asMap);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.toString(), allOf([contains("Missing required"), contains("ConfigurationSubclass"), contains("'port'")]));
@@ -250,7 +251,7 @@ void main() {
           "  port: 5000\n"
           "  extraDatabaseValue: 3";
 
-      var _ = new ConfigurationSubclass.fromString(yamlString);
+      var _ = ConfigurationSubclass.fromString(yamlString);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.toString(), allOf([contains("Missing required"), contains("ConfigurationSubclass"), contains("'extraValue'")]));
@@ -269,7 +270,7 @@ void main() {
           "extraDatabaseValue": 3
         }
       };
-      var _ = new ConfigurationSubclass.fromMap(asMap);
+      var _ = ConfigurationSubclass.fromMap(asMap);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.toString(), allOf([contains("Missing required"), contains("ConfigurationSubclass"), contains("'extraValue'")]));
@@ -288,7 +289,7 @@ void main() {
           "  databaseName: dbname\n"
           "  extraDatabaseValue: 3";
 
-      var _ = new ConfigurationSubclass.fromString(yamlString);
+      var _ = ConfigurationSubclass.fromString(yamlString);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.toString(), allOf([contains("Missing required"), contains("DatabaseConfigurationSubclass"), contains("'port'")]));
@@ -307,7 +308,7 @@ void main() {
           "extraDatabaseValue": 3
         }
       };
-      var _ = new ConfigurationSubclass.fromMap(asMap);
+      var _ = ConfigurationSubclass.fromMap(asMap);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.toString(), allOf([contains("Missing required"), contains("DatabaseConfigurationSubclass"), contains("'port'")]));
@@ -326,7 +327,7 @@ void main() {
           "  databaseName: dbname\n"
           "  port: 5000\n";
 
-      var _ = new ConfigurationSubclass.fromString(yamlString);
+      var _ = ConfigurationSubclass.fromString(yamlString);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.toString(), allOf([contains("Missing required"), contains("ConfigurationSubclass"), contains("'extraDatabaseValue'")]));
@@ -345,7 +346,7 @@ void main() {
           "port": 5000,
         }
       };
-      var _ = new ConfigurationSubclass.fromMap(asMap);
+      var _ = ConfigurationSubclass.fromMap(asMap);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.toString(), allOf([contains("Missing required"), contains("ConfigurationSubclass"), contains("'extraDatabaseValue'")]));
@@ -363,7 +364,7 @@ void main() {
           "  databaseName: dbname\n"
           "  port: 5000\n";
 
-      var _ = new ConfigurationSubclassWithValidation.fromString(yamlString);
+      var _ = ConfigurationSubclassWithValidation.fromString(yamlString);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.toString(), allOf([contains("Validation errors"), contains("DatabaseConfigurationSubclassWithValidation"), contains("[host: not a host.com]")]));
@@ -381,7 +382,7 @@ void main() {
           "port": 5000,
         }
       };
-      var _ = new ConfigurationSubclassWithValidation.fromMap(asMap);
+      var _ = ConfigurationSubclassWithValidation.fromMap(asMap);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.toString(), allOf([contains("Validation errors"), contains("DatabaseConfigurationSubclassWithValidation"), contains("[host: not a host.com]")]));
@@ -397,7 +398,7 @@ void main() {
         "  databaseName: dbname\n"
         "  port: 5000";
 
-    var t = new TopLevelConfiguration.fromString(yamlString);
+    var t = TopLevelConfiguration.fromString(yamlString);
     expect(t.port, 80);
     expect(t.name, isNull);
     expect(t.database.host, "stablekernel.com");
@@ -416,7 +417,7 @@ void main() {
         "port": 5000
       }
     };
-    t = new TopLevelConfiguration.fromMap(asMap);
+    t = TopLevelConfiguration.fromMap(asMap);
     expect(t.port, 80);
     expect(t.name, isNull);
     expect(t.database.host, "stablekernel.com");
@@ -435,7 +436,7 @@ void main() {
         "  databaseName: dbname\n"
         "  port: 5000";
 
-    var t = new TopLevelConfiguration.fromString(yamlString);
+    var t = TopLevelConfiguration.fromString(yamlString);
     expect(t.port, 80);
     expect(t.name, "foobar");
     expect(t.database.host, "stablekernel.com");
@@ -449,7 +450,7 @@ void main() {
       "name": "foobar",
       "database": {"host": "stablekernel.com", "password": "fred", "databaseName": "dbname", "port": 5000}
     };
-    t = new TopLevelConfiguration.fromMap(asMap);
+    t = TopLevelConfiguration.fromMap(asMap);
     expect(t.port, 80);
     expect(t.name, "foobar");
     expect(t.database.host, "stablekernel.com");
@@ -468,7 +469,7 @@ void main() {
           "  password: fred\n"
           "  port: 5000";
 
-      var _ = new TopLevelConfiguration.fromString(yamlString);
+      var _ = TopLevelConfiguration.fromString(yamlString);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.toString(), allOf([contains("Missing"), contains("DatabaseConfiguration"), contains("'databaseName'")]));
@@ -480,7 +481,7 @@ void main() {
         "name": "foobar",
         "database": {"host": "stablekernel.com", "password": "fred", "port": 5000}
       };
-      var _ = new TopLevelConfiguration.fromMap(asMap);
+      var _ = TopLevelConfiguration.fromMap(asMap);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.toString(), allOf([contains("Missing"), contains("DatabaseConfiguration"), contains("'databaseName'")]));
@@ -513,7 +514,7 @@ void main() {
         "    port: 2000\n"
         "    host: stablekernel.com\n";
 
-    var special = new SpecialInfo.fromString(yamlString);
+    var special = SpecialInfo.fromString(yamlString);
     expect(special.strings, ["abcd", "efgh"]);
     expect(special.databaseRecords.first.host, "stablekernel.com");
     expect(special.databaseRecords.first.databaseName, "db1");
@@ -545,10 +546,10 @@ void main() {
         "  databaseName: dbname\n"
         "  port: 5000";
 
-    var file = new File("tmp.yaml");
+    var file = File("tmp.yaml");
     file.writeAsStringSync(yamlString);
 
-    var t = new TopLevelConfiguration.fromFile(new File("tmp.yaml"));
+    var t = TopLevelConfiguration.fromFile(File("tmp.yaml"));
     expect(t.port, 80);
     expect(t.name, "foobar");
     expect(t.database.host, "stablekernel.com");
@@ -563,7 +564,7 @@ void main() {
   test("Optional nested ConfigurationItem can be omitted", () {
     var yamlString = "port: 80";
 
-    var config = new OptionalEmbeddedContainer.fromString(yamlString);
+    var config = OptionalEmbeddedContainer.fromString(yamlString);
     expect(config.port, 80);
     expect(config.database, isNull);
 
@@ -573,7 +574,7 @@ void main() {
         "  port: 90\n"
         "  databaseName: db";
 
-    config = new OptionalEmbeddedContainer.fromString(yamlString);
+    config = OptionalEmbeddedContainer.fromString(yamlString);
     expect(config.port, 80);
     expect(config.database.host, "here");
     expect(config.database.port, 90);
@@ -588,8 +589,9 @@ void main() {
         "  databaseName: db";
 
     try {
-      var _ = new OptionalEmbeddedContainer.fromString(yamlString);
+      var _ = OptionalEmbeddedContainer.fromString(yamlString);
       expect(true, false);
+      // ignore: empty_catches
     } on ConfigurationException {}
   });
 
@@ -597,7 +599,7 @@ void main() {
     var yamlString = "port: 80\n"
         "database: \"postgres://dart:pw@host:5432/dbname\"\n";
 
-    var values = new OptionalEmbeddedContainer.fromString(yamlString);
+    var values = OptionalEmbeddedContainer.fromString(yamlString);
     expect(values.port, 80);
     expect(values.database.username, "dart");
     expect(values.database.password, "pw");
@@ -609,7 +611,7 @@ void main() {
     var yamlString = "port: 80\n"
         "database: \"postgres://host:5432/dbname\"\n";
 
-    var values = new OptionalEmbeddedContainer.fromString(yamlString);
+    var values = OptionalEmbeddedContainer.fromString(yamlString);
     expect(values.port, 80);
     expect(values.database.username, isNull);
     expect(values.database.password, isNull);
@@ -622,7 +624,7 @@ void main() {
         "database: \"postgres://dart:pw@host:5432\"\n";
 
     try {
-      var _ = new OptionalEmbeddedContainer.fromString(yamlString);
+      var _ = OptionalEmbeddedContainer.fromString(yamlString);
       expect(true, false);
     } on ConfigurationException catch (e) {
       expect(e.toString(), allOf([contains("Missing"), contains("DatabaseConfiguration"), contains("'databaseName'")]));
@@ -633,7 +635,7 @@ void main() {
     print("This test must be run with environment variables of TEST_VALUE=1 and TEST_BOOL=true");
 
     var yamlString = "path: \$PATH\noptionalDooDad: \$XYZ123\ntestValue: \$TEST_VALUE\ntestBoolean: \$TEST_BOOL";
-    var values = new EnvironmentConfiguration.fromString(yamlString);
+    var values = EnvironmentConfiguration.fromString(yamlString);
     expect(values.path, Platform.environment["PATH"]);
     expect(values.testValue, int.parse(Platform.environment["TEST_VALUE"]));
     expect(values.testBoolean, true);
@@ -643,7 +645,7 @@ void main() {
   test("Missing environment variables throw required error", () {
     var yamlString = "value: \$MISSING_ENV_VALUE";
     try {
-      var _ = new EnvFail.fromString(yamlString);
+      var _ = EnvFail.fromString(yamlString);
       expect(true, false);
     } on ConfigurationException catch (e) {
       expect(e.message, contains("value"));
@@ -652,13 +654,13 @@ void main() {
 
   test("Static variables get ignored", () {
     var yamlString = "value: 1";
-    var values = new StaticVariableConfiguration.fromString(yamlString);
+    var values = StaticVariableConfiguration.fromString(yamlString);
     expect(values.value, 1);
   });
 
   test("Private variables get ignored", () {
     var yamlString = "value: 1";
-    var values = new PrivateVariableConfiguration.fromString(yamlString);
+    var values = PrivateVariableConfiguration.fromString(yamlString);
     expect(values.value, 1);
     expect(values._privateVariable, null);
   });
@@ -666,13 +668,54 @@ void main() {
   test("DatabaseConfiguration can be read from connection string", () {
     print(
         "This test must be run with environment variables of TEST_DB_ENV_VAR=postgres://user:password@host:5432/dbname");
-    final yamlString = "port: 80\ndatabase: \$TEST_DB_ENV_VAR";
-    final config = new TopLevelConfiguration.fromString(yamlString);
+    const yamlString = "port: 80\ndatabase: \$TEST_DB_ENV_VAR";
+    final config = TopLevelConfiguration.fromString(yamlString);
     expect(config.database.username, "user");
     expect(config.database.password, "password");
     expect(config.database.host, "host");
     expect(config.database.port, 5432);
     expect(config.database.databaseName, "dbname");
+  });
+  
+  test("Assigning value of incorrect type to parsed integer emits error and field name", () {
+    var yamlString = "port: foobar\n"
+      "name: foobar\n"
+      "database:\n"
+      "  host: stablekernel.com\n"
+      "  username: bob\n"
+      "  password: fred\n"
+      "  databaseName: dbname\n"
+      "  port: 5000";
+
+    try {
+      TopLevelConfiguration.fromString(yamlString);
+      fail('unreachable');
+    } on ConfigurationException catch (e) {
+      expect(e.toString(), contains("TopLevelConfiguration"));
+      expect(e.toString(), contains("port"));
+      expect(e.toString(), contains("foobar"));
+    }
+  });
+
+  test("Assigning value of incorrect type to nested field emits error and field name", () {
+    var yamlString = "port: 1000\n"
+      "name: foobar\n"
+      "database:\n"
+      "  host: stablekernel.com\n"
+      "  username:\n"
+      "    - item\n"
+      "  password: password\n"
+      "  databaseName: dbname\n"
+      "  port: 5000";
+
+    try {
+      TopLevelConfiguration.fromString(yamlString);
+      fail('unreachable');
+    } on ConfigurationException catch (e) {
+      expect(e.toString(), contains("DatabaseConfiguration"));
+      expect(e.toString(), contains("username"));
+      expect(e.toString(), contains("[item]"));
+    }
   });
 }
 
@@ -706,6 +749,7 @@ class TopLevelConfigurationWithValidation extends Configuration {
   @requiredConfiguration
   int port;
 
+  @override
   List<String> validate() {
     if (port < 0 || port > 65535) {
       return ["port: $port"];
@@ -769,8 +813,9 @@ class ConfigurationSubclassWithValidation extends ConfigurationSuperclass {
 class DatabaseConfigurationSubclassWithValidation extends DatabaseConfiguration {
   DatabaseConfigurationSubclassWithValidation();
 
+  @override
   List<String> validate() {
-    RegExp validHost = new RegExp(
+    RegExp validHost = RegExp(
         r"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$");
     if (!validHost.hasMatch(host)) {
       return ["host: $host"];

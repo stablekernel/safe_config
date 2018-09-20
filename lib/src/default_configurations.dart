@@ -15,7 +15,7 @@ class DatabaseConfiguration extends Configuration {
   DatabaseConfiguration.fromMap(Map<dynamic, dynamic> yaml) : super.fromMap(yaml);
 
   /// A named constructor that contains all of the properties of this instance.
-  DatabaseConfiguration.withConnectionInfo(this.username, this.password, this.host, this.port, this.databaseName, {bool temporary: false}) {
+  DatabaseConfiguration.withConnectionInfo(this.username, this.password, this.host, this.port, this.databaseName, {bool temporary= false}) {
     isTemporary = temporary;
   }
 
@@ -54,13 +54,14 @@ class DatabaseConfiguration extends Configuration {
   @optionalConfiguration
   bool isTemporary;
 
+  @override
   void decode(dynamic anything) {
     if (anything is! String) {
-      throw new ConfigurationException(runtimeType,
+      throw ConfigurationException(runtimeType,
         "Invalid value '$anything'. Must be 'String' or 'Map'.");
     }
 
-    var uri = Uri.parse(anything);
+    var uri = Uri.parse(anything as String);
     host = uri.host;
     port = uri.port;
     if (uri.pathSegments.length == 1) {
@@ -73,7 +74,7 @@ class DatabaseConfiguration extends Configuration {
 
     var authority = uri.userInfo.split(":");
     if (authority != null) {
-      if (authority.length > 0) {
+      if (authority.isNotEmpty) {
         username = authority.first;
       }
       if (authority.length > 1) {
