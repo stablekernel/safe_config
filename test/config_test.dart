@@ -607,6 +607,15 @@ void main() {
     expect(values.database.databaseName, "dbname");
   });
 
+  test("Database configuration as a string can contain an URL-encoded authority", () {
+    var yamlString = "port: 80\n"
+        "database: \"postgres://dart%40google.com:pass%23word@host:5432/dbname\"\n";
+
+    var values = OptionalEmbeddedContainer.fromString(yamlString);
+    expect(values.database.username, "dart@google.com");
+    expect(values.database.password, "pass#word");
+  });
+
   test("Omitting optional values in a 'decoded' config still returns succees", () {
     var yamlString = "port: 80\n"
         "database: \"postgres://host:5432/dbname\"\n";
