@@ -75,10 +75,10 @@ class DatabaseConfiguration extends Configuration {
     var authority = uri.userInfo.split(":");
     if (authority != null) {
       if (authority.isNotEmpty) {
-        username = authority.first;
+        username = Uri.decodeComponent(authority.first);
       }
       if (authority.length > 1) {
-        password = authority.last;
+        password = Uri.decodeComponent(authority.last);
       }
     }
   }
