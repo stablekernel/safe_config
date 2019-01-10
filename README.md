@@ -14,7 +14,7 @@ You define a subclass of `Configuration` with those properties:
 ```
 class ApplicationConfiguration extends Configuration {
  	ApplicationConfiguration(String fileName) : 
- 		super.fromFile(fileName);
+ 		super.fromFile(File(fileName));
 	
 	int port;
 	String serverHeader;
@@ -45,7 +45,7 @@ You may mark properties in `Configuration`s as optional.
 ```
 class ApplicationConfiguration extends Configuration {
  	ApplicationConfiguration(String fileName) : 
- 		super.fromFile(fileName);
+ 		super.fromFile(File(fileName));
 	
 	int port;
 	
@@ -64,7 +64,7 @@ You may nest `Configuration` as deeply as you wish:
 ```
 class ApplicationConfiguration extends Configuration {
  	ApplicationConfiguration(String fileName) : 
- 		super.fromFile(fileName);
+ 		super.fromFile(File(fileName));
 	
 	int port;
 	
@@ -85,7 +85,7 @@ You may also use arrays and maps, for which the values can be primitive types or
 ```
 class ApplicationConfiguration extends Configuration {
  	ApplicationConfiguration(String fileName) : 
- 		super.fromFile(fileName);
+ 		super.fromFile(File(fileName));
 		
 	Map<String, DatabaseConfiguration> databases;
 }
