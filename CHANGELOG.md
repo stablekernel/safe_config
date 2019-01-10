@@ -1,5 +1,8 @@
 # Changelog
 
+# 2.0.2
+- Fixes issue when a database connection Uri has percent encoded values for username/password segments.
+
 # 2.0.1
 
 - Better error messaging for incorrect types
