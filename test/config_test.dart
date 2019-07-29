@@ -893,11 +893,12 @@ class EnvironmentConfiguration extends Configuration {
 }
 
 class StaticVariableConfiguration extends Configuration {
-  static String staticVariable;
 
   StaticVariableConfiguration();
 
   StaticVariableConfiguration.fromString(String contents) : super.fromString(contents);
+
+  static String staticVariable;
 
   int value;
 }

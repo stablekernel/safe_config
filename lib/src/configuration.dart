@@ -42,9 +42,9 @@ abstract class Configuration {
   List<String> validate() => [];
 
   static bool _isVariableRequired(VariableMirror m) {
-    ConfigurationItemAttribute attribute = m.metadata
+    final attribute = m.metadata
         .firstWhere((im) => im.type.isSubtypeOf(reflectType(ConfigurationItemAttribute)), orElse: () => null)
-        ?.reflectee;
+        ?.reflectee as ConfigurationItemAttribute;
 
     return attribute == null || attribute.type == ConfigurationItemAttributeType.required;
   }
@@ -171,9 +171,9 @@ abstract class Configuration {
 
   Configuration _decodeConfig(TypeMirror type, dynamic object) {
     try {
-      Configuration item = (type as ClassMirror)
+      final item = (type as ClassMirror)
         .newInstance(const Symbol(""), [])
-        .reflectee;
+        .reflectee as Configuration;
       item._read(type, object);
       return item;
     } on NoSuchMethodError {
@@ -193,7 +193,7 @@ abstract class Configuration {
       return MapEntry(key, _decode(typeMirror.typeArguments.last, name, val));
     });
 
-    Map map = (typeMirror as ClassMirror).newInstance(const Symbol(""), []).reflectee;
+    final map = (typeMirror as ClassMirror).newInstance(const Symbol(""), []).reflectee as Map;
     decoded.forEach((k, v) {
       map[k] = v;
     });
