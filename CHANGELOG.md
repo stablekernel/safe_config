@@ -1,5 +1,10 @@
 # Changelog
 
+# 3.0.0
+
+- Improves error messaging at runtime to better identify issues with a configuration file
+- Adds 'package:runtime' support to enable AOT compilation using this package.
+
 # 2.0.2
 - Fixes issue when a database connection Uri has percent encoded values for username/password segments.
 

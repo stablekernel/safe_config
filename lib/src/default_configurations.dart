@@ -4,7 +4,6 @@ import 'package:safe_config/src/configuration.dart';
 
 /// A [Configuration] to represent a database connection configuration.
 class DatabaseConfiguration extends Configuration {
-
   /// Default constructor.
   DatabaseConfiguration();
 
@@ -12,10 +11,13 @@ class DatabaseConfiguration extends Configuration {
 
   DatabaseConfiguration.fromString(String yaml) : super.fromString(yaml);
 
-  DatabaseConfiguration.fromMap(Map<dynamic, dynamic> yaml) : super.fromMap(yaml);
+  DatabaseConfiguration.fromMap(Map<dynamic, dynamic> yaml)
+      : super.fromMap(yaml);
 
   /// A named constructor that contains all of the properties of this instance.
-  DatabaseConfiguration.withConnectionInfo(this.username, this.password, this.host, this.port, this.databaseName, {bool temporary= false}) {
+  DatabaseConfiguration.withConnectionInfo(
+      this.username, this.password, this.host, this.port, this.databaseName,
+      {bool temporary = false}) {
     isTemporary = temporary;
   }
 
@@ -55,13 +57,18 @@ class DatabaseConfiguration extends Configuration {
   bool isTemporary;
 
   @override
-  void decode(dynamic anything) {
-    if (anything is! String) {
-      throw ConfigurationException(runtimeType,
-        "Invalid value '$anything'. Must be 'String' or 'Map'.");
+  void decode(dynamic value) {
+    if (value is Map) {
+      super.decode(value);
+      return;
     }
 
-    var uri = Uri.parse(anything as String);
+    if (value is! String) {
+      throw ConfigurationException(this,
+          "'${value.runtimeType}' is not assignable; must be a object or string");
+    }
+
+    var uri = Uri.parse(value as String);
     host = uri.host;
     port = uri.port;
     if (uri.pathSegments.length == 1) {
@@ -69,6 +76,7 @@ class DatabaseConfiguration extends Configuration {
     }
 
     if (uri.userInfo == null || uri.userInfo == '') {
+      validate();
       return;
     }
 
@@ -81,6 +89,8 @@ class DatabaseConfiguration extends Configuration {
         password = Uri.decodeComponent(authority.last);
       }
     }
+
+    validate();
   }
 }
 

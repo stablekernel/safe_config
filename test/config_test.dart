@@ -103,7 +103,7 @@ void main() {
       var _ = TopLevelConfiguration.fromString(yamlString);
       fail('unreachable');
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("TopLevelConfiguration"), contains("Extraneous"), contains("'extraKey'")]));
+      expect(e.toString(), allOf([contains("TopLevelConfiguration"), contains("unexpected keys found"), contains("'extraKey'")]));
     }
 
     try {
@@ -122,7 +122,8 @@ void main() {
       var _ = TopLevelConfiguration.fromMap(asMap);
       fail('unreachable');
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("TopLevelConfiguration"), contains("Extraneous"), contains("'extraKey'")]));
+      print("$e");
+      expect(e.toString(), allOf([contains("TopLevelConfiguration"), contains("unexpected keys found"), contains("'extraKey'")]));
     }
   });
 
@@ -139,7 +140,8 @@ void main() {
       var _ = TopLevelConfiguration.fromString(yamlString);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("Missing required"), contains("TopLevelConfiguration"), contains("'port'")]));
+      print("$e");
+      expect(e.toString(), allOf([contains("missing required"), contains("TopLevelConfiguration"), contains("'port'")]));
     }
 
     try {
@@ -156,7 +158,8 @@ void main() {
       var _ = TopLevelConfiguration.fromMap(asMap);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("Missing required"), contains("TopLevelConfiguration"), contains("'port'")]));
+      print("$e");
+      expect(e.toString(), allOf([contains("missing required"), contains("TopLevelConfiguration"), contains("'port'")]));
     }
   });
 
@@ -167,7 +170,8 @@ void main() {
       var _ = TopLevelConfiguration.fromString(yamlString);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("Missing required"), contains("TopLevelConfiguration"), contains("'database'")]));
+      print("$e");
+      expect(e.toString(), allOf([contains("missing required"), contains("TopLevelConfiguration"), contains("'database'")]));
     }
 
     try {
@@ -175,7 +179,8 @@ void main() {
       var _ = TopLevelConfiguration.fromMap(asMap);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("Missing required"), contains("TopLevelConfiguration"), contains("'database'")]));
+      print("$e");
+      expect(e.toString(), allOf([contains("missing required"), contains("TopLevelConfiguration"), contains("'database'")]));
     }
   });
 
@@ -187,8 +192,10 @@ void main() {
       var _ = TopLevelConfigurationWithValidation.fromString(yamlString);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
+      print("$e");
       expect(e.toString(), contains("TopLevelConfigurationWithValidation"));
-      expect(e.toString(), contains("[port: 65536]"));
+      expect(e.toString(), contains("port"));
+      expect(e.toString(), contains("65536"));
     }
 
     try {
@@ -196,8 +203,10 @@ void main() {
       var _ = TopLevelConfigurationWithValidation.fromMap(asMap);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
+      print("$e");
       expect(e.toString(), contains("TopLevelConfigurationWithValidation"));
-      expect(e.toString(), contains("[port: 65536]"));
+      expect(e.toString(), contains("port"));
+      expect(e.toString(), contains("65536"));
     }
   });
 
@@ -216,7 +225,8 @@ void main() {
       var _ = ConfigurationSubclass.fromString(yamlString);
       fail("unreachable");
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("Missing required"), contains("ConfigurationSubclass"), contains("'port'")]));
+      print("$e");
+      expect(e.toString(), allOf([contains("missing required"), contains("ConfigurationSubclass"), contains("'port'")]));
     }
 
     try {
@@ -235,7 +245,8 @@ void main() {
       var _ = ConfigurationSubclass.fromMap(asMap);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("Missing required"), contains("ConfigurationSubclass"), contains("'port'")]));
+      print("$e");
+      expect(e.toString(), allOf([contains("missing required"), contains("ConfigurationSubclass"), contains("'port'")]));
     }
   });
 
@@ -254,7 +265,8 @@ void main() {
       var _ = ConfigurationSubclass.fromString(yamlString);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("Missing required"), contains("ConfigurationSubclass"), contains("'extraValue'")]));
+      print("$e");
+      expect(e.toString(), allOf([contains("missing required"), contains("ConfigurationSubclass"), contains("'extraValue'")]));
     }
 
     try {
@@ -273,7 +285,8 @@ void main() {
       var _ = ConfigurationSubclass.fromMap(asMap);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("Missing required"), contains("ConfigurationSubclass"), contains("'extraValue'")]));
+      print("$e");
+      expect(e.toString(), allOf([contains("missing required"), contains("ConfigurationSubclass"), contains("'extraValue'")]));
     }
   });
 
@@ -292,7 +305,8 @@ void main() {
       var _ = ConfigurationSubclass.fromString(yamlString);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("Missing required"), contains("DatabaseConfigurationSubclass"), contains("'port'")]));
+      print("$e");
+      expect(e.toString(), allOf([contains("missing required"), contains("ConfigurationSubclass"), contains("'port'")]));
     }
 
     try {
@@ -311,7 +325,8 @@ void main() {
       var _ = ConfigurationSubclass.fromMap(asMap);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("Missing required"), contains("DatabaseConfigurationSubclass"), contains("'port'")]));
+      print("$e");
+      expect(e.toString(), allOf([contains("missing required"), contains("ConfigurationSubclass"), contains("'port'")]));
     }
   });
 
@@ -330,7 +345,8 @@ void main() {
       var _ = ConfigurationSubclass.fromString(yamlString);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("Missing required"), contains("ConfigurationSubclass"), contains("'extraDatabaseValue'")]));
+      print("$e");
+      expect(e.toString(), allOf([contains("missing required"), contains("ConfigurationSubclass"), contains("'extraDatabaseValue'")]));
     }
 
     try {
@@ -349,7 +365,8 @@ void main() {
       var _ = ConfigurationSubclass.fromMap(asMap);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("Missing required"), contains("ConfigurationSubclass"), contains("'extraDatabaseValue'")]));
+      print("$e");
+      expect(e.toString(), allOf([contains("missing required"), contains("ConfigurationSubclass"), contains("'extraDatabaseValue'")]));
     }
   });
 
@@ -367,7 +384,8 @@ void main() {
       var _ = ConfigurationSubclassWithValidation.fromString(yamlString);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("Validation errors"), contains("DatabaseConfigurationSubclassWithValidation"), contains("[host: not a host.com]")]));
+      print("$e");
+      expect(e.toString(), allOf([contains("ConfigurationSubclassWithValidation"), contains("not a host.com")]));
     }
 
     try {
@@ -385,7 +403,8 @@ void main() {
       var _ = ConfigurationSubclassWithValidation.fromMap(asMap);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("Validation errors"), contains("DatabaseConfigurationSubclassWithValidation"), contains("[host: not a host.com]")]));
+      print("$e");
+      expect(e.toString(), allOf([contains("ConfigurationSubclassWithValidation"), contains("not a host.com")]));
     }
   });
 
@@ -472,7 +491,8 @@ void main() {
       var _ = TopLevelConfiguration.fromString(yamlString);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("Missing"), contains("DatabaseConfiguration"), contains("'databaseName'")]));
+      print("$e");
+      expect(e.toString(), allOf([contains("missing"), contains("TopLevelConfiguration"), contains("'databaseName'")]));
     }
 
     try {
@@ -484,7 +504,8 @@ void main() {
       var _ = TopLevelConfiguration.fromMap(asMap);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("Missing"), contains("DatabaseConfiguration"), contains("'databaseName'")]));
+      print("$e");
+      expect(e.toString(), allOf([contains("missing"), contains("TopLevelConfiguration"), contains("'databaseName'")]));
     }
   });
 
@@ -590,9 +611,10 @@ void main() {
 
     try {
       var _ = OptionalEmbeddedContainer.fromString(yamlString);
-      expect(true, false);
-      // ignore: empty_catches
-    } on ConfigurationException {}
+      fail('unreachable');
+    } on ConfigurationException catch (e) {
+      print("$e");
+    }
   });
 
   test("Database configuration can come from string", () {
@@ -636,7 +658,8 @@ void main() {
       var _ = OptionalEmbeddedContainer.fromString(yamlString);
       expect(true, false);
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("Missing"), contains("DatabaseConfiguration"), contains("'databaseName'")]));
+      print("$e");
+      expect(e.toString(), allOf([contains("missing"), contains("OptionalEmbeddedContainer"), contains("'databaseName'")]));
     }
   });
 
@@ -657,6 +680,7 @@ void main() {
       var _ = EnvFail.fromString(yamlString);
       expect(true, false);
     } on ConfigurationException catch (e) {
+      print("$e");
       expect(e.message, contains("value"));
     }
   });
@@ -700,6 +724,7 @@ void main() {
       TopLevelConfiguration.fromString(yamlString);
       fail('unreachable');
     } on ConfigurationException catch (e) {
+      print("$e");
       expect(e.toString(), contains("TopLevelConfiguration"));
       expect(e.toString(), contains("port"));
       expect(e.toString(), contains("foobar"));
@@ -721,9 +746,10 @@ void main() {
       TopLevelConfiguration.fromString(yamlString);
       fail('unreachable');
     } on ConfigurationException catch (e) {
-      expect(e.toString(), contains("DatabaseConfiguration"));
-      expect(e.toString(), contains("username"));
-      expect(e.toString(), contains("[item]"));
+      print("$e");
+      expect(e.toString(), contains("TopLevelConfiguration"));
+      expect(e.toString(), contains("database.username"));
+      expect(e.toString(), contains("input is wrong type"));
     }
   });
 
@@ -782,12 +808,10 @@ class TopLevelConfigurationWithValidation extends Configuration {
   int port;
 
   @override
-  List<String> validate() {
+  void validate() {
     if (port < 0 || port > 65535) {
-      return ["port: $port"];
+      throw ConfigurationException(this, "$port", keyPath: ["port"]);
     }
-
-    return [];
   }
 
   @optionalConfiguration
@@ -846,14 +870,12 @@ class DatabaseConfigurationSubclassWithValidation extends DatabaseConfiguration 
   DatabaseConfigurationSubclassWithValidation();
 
   @override
-  List<String> validate() {
+  void validate() {
     RegExp validHost = RegExp(
         r"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$");
     if (!validHost.hasMatch(host)) {
-      return ["host: $host"];
+      throw ConfigurationException(this, host, keyPath: ["host"]);
     }
-
-    return [];
   }
 }
 
