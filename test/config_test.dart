@@ -809,6 +809,7 @@ class TopLevelConfigurationWithValidation extends Configuration {
 
   @override
   void validate() {
+    super.validate();
     if (port < 0 || port > 65535) {
       throw ConfigurationException(this, "$port", keyPath: ["port"]);
     }
@@ -871,6 +872,7 @@ class DatabaseConfigurationSubclassWithValidation extends DatabaseConfiguration 
 
   @override
   void validate() {
+    super.validate();
     RegExp validHost = RegExp(
         r"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$");
     if (!validHost.hasMatch(host)) {

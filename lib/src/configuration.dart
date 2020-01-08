@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:runtime/runtime.dart';
 import 'package:yaml/yaml.dart';
+import 'package:meta/meta.dart';
+
 import 'package:safe_config/src/intermediate_exception.dart';
 
 /// Subclasses of [Configuration] read YAML strings and files, assigning values from the YAML document to properties
@@ -27,8 +29,6 @@ abstract class Configuration {
   /// [file] must contain valid YAML data.
   Configuration.fromFile(File file) : this.fromString(file.readAsStringSync());
 
-  Map<String, ConfigurationProperty> get properties => _runtime.properties;
-
   ConfigurationRuntime get _runtime =>
       RuntimeContext.current[runtimeType] as ConfigurationRuntime;
 
@@ -41,70 +41,23 @@ abstract class Configuration {
           this, "input is not an object (is a '${value.runtimeType}')");
     }
 
-    final valuesCopy = Map.from(value as Map);
-    properties.forEach((name, property) {
-      try {
-        final takingValue = valuesCopy.remove(name);
-        property.apply(this, takingValue);
-      } on ConfigurationException catch (e) {
-        throw ConfigurationException(this, e.message,
-            keyPath: [name]..addAll(e.keyPath));
-      } on TypeError catch (e) {
-        throw ConfigurationException(this, "input is wrong type (${e.message})",
-            keyPath: [name]);
-      } on IntermediateException catch (e) {
-        final underlying = e.underlying;
-        if (underlying is TypeError) {
-          throw ConfigurationException(
-              this, "input is the wrong type (${underlying.message})",
-              keyPath: [name]..addAll(e.keyPath));
-        } else if (underlying is ConfigurationException) {
-          final keyPaths = [
-            [name],
-            e.keyPath,
-            underlying.keyPath
-          ].expand((i) => i).toList();
-          throw ConfigurationException(this, underlying.message,
-              keyPath: keyPaths);
-        }
-
-        throw ConfigurationException(this, underlying.toString(),
-            keyPath: [name]..addAll(e.keyPath));
-      } catch (e) {
-        throw ConfigurationException(this, e.toString(), keyPath: [name]);
-      }
-    });
-
-    if (valuesCopy.isNotEmpty) {
-      throw ConfigurationException(this,
-          "unexpected keys found: ${valuesCopy.keys.map((s) => "'$s'").join(", ")}.");
-    }
+    _runtime.decode(this, value as Map);
 
     validate();
   }
 
-  /// Override this method to perform validations on input data.
+  /// Validates this configuration.
   ///
-  /// Return the empty array if there are no validation errors. If there are errors,
-  /// return a description of them in an list of strings.
+  /// By default, ensures all required keys are non-null.
+  ///
+  /// Override this method to perform validations on input data. Throw [ConfigurationException]
+  /// for invalid data.
+  @mustCallSuper
   void validate() {
     _runtime.validate(this);
   }
-}
 
-abstract class ConfigurationRuntime {
-  Map<String, ConfigurationProperty> get properties;
-
-  void validate(Configuration configuration);
-}
-
-abstract class ConfigurationProperty {
-  ConfigurationProperty(this.key, {this.isRequired = true});
-
-  final String key;
-  final bool isRequired;
-
-  static dynamic actualize(dynamic value) {
+  static dynamic getEnvironmentOrValue(dynamic value) {
     if (value is String && value.startsWith(r"$")) {
       final envKey = value.substring(1);
       if (!Platform.environment.containsKey(envKey)) {
@@ -115,23 +68,36 @@ abstract class ConfigurationProperty {
     }
     return value;
   }
+}
 
-  void apply(Configuration instance, dynamic input);
+abstract class ConfigurationRuntime {
+  void decode(Configuration configuration, Map input);
+  void validate(Configuration configuration);
 
-  bool decodeBool(dynamic value) {
-    if (value is String) {
-      return value == "true";
+  dynamic tryDecode(Configuration configuration, String name, void decode()) {
+    try {
+      return decode();
+    } on ConfigurationException catch (e) {
+      throw ConfigurationException(configuration, e.message,
+        keyPath: [name]..addAll(e.keyPath));
+    } on IntermediateException catch (e) {
+      final underlying = e.underlying;
+      if (underlying is ConfigurationException) {
+        final keyPaths = [
+          [name],
+          e.keyPath,
+          underlying.keyPath
+        ].expand((i) => i).toList();
+        throw ConfigurationException(configuration, underlying.message,
+          keyPath: keyPaths);
+      }
+
+      throw ConfigurationException(configuration, underlying.toString(),
+        keyPath: [name]..addAll(e.keyPath));
+    } catch (e) {
+      throw ConfigurationException(configuration, e.toString(),
+        keyPath: [name]);
     }
-
-    return value as bool;
-  }
-
-  int decodeInt(dynamic value) {
-    if (value is String) {
-      return int.parse(value);
-    }
-
-    return value as int;
   }
 }
 
@@ -166,6 +132,11 @@ class ConfigurationException {
   ConfigurationException(this.configuration, this.message,
       {this.keyPath = const []});
 
+  ConfigurationException.missingKeys(
+      this.configuration, List<String> missingKeys, {this.keyPath = const []})
+      : message =
+            "missing required key(s): ${missingKeys.map((s) => "'$s'").join(", ")}";
+
   /// The [Configuration] in which this exception occurred.
   final Configuration configuration;
 
@@ -184,7 +155,7 @@ class ConfigurationException {
     }
 
     final joinedKeyPath = StringBuffer();
-    for (var i = 0; i < keyPath.length; i ++) {
+    for (var i = 0; i < keyPath.length; i++) {
       final thisKey = keyPath[i];
 
       if (thisKey is String) {

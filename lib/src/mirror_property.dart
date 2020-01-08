@@ -3,12 +3,13 @@ import 'dart:mirrors';
 import 'package:safe_config/src/configuration.dart';
 import 'package:safe_config/src/intermediate_exception.dart';
 
-class MirrorConfigurationProperty extends ConfigurationProperty {
-  MirrorConfigurationProperty(this.property)
-      : super(MirrorSystem.getName(property.simpleName),
-            isRequired: _isVariableRequired(property));
+class MirrorConfigurationProperty {
+  MirrorConfigurationProperty(this.property);
 
-  VariableMirror property;
+  final VariableMirror property;
+
+  String get key => MirrorSystem.getName(property.simpleName);
+  bool get isRequired => _isVariableRequired(property);
 
   static bool _isVariableRequired(VariableMirror m) {
     final attribute = m.metadata
@@ -22,23 +23,16 @@ class MirrorConfigurationProperty extends ConfigurationProperty {
         attribute.type == ConfigurationItemAttributeType.required;
   }
 
-  @override
-  void apply(Configuration instance, dynamic input) {
-    if (input == null) {
-      return null;
-    }
-
+  dynamic decode(dynamic input) {
     final type = property.type;
-    final mirror = reflect(instance);
-    final value = _decodeValue(type, ConfigurationProperty.actualize(input));
-    mirror.setField(property.simpleName, value);
+    return _decodeValue(type, Configuration.getEnvironmentOrValue(input));
   }
 
   dynamic _decodeValue(TypeMirror type, dynamic value) {
     if (type.isSubtypeOf(reflectType(int))) {
-      return decodeInt(value);
+      return _decodeInt(value);
     } else if (type.isSubtypeOf(reflectType(bool))) {
-      return decodeBool(value);
+      return _decodeBool(value);
     } else if (type.isSubtypeOf(reflectType(Configuration))) {
       return _decodeConfig(type, value);
     } else if (type.isSubtypeOf(reflectType(List))) {
@@ -48,6 +42,22 @@ class MirrorConfigurationProperty extends ConfigurationProperty {
     }
 
     return value;
+  }
+
+  bool _decodeBool(dynamic value) {
+    if (value is String) {
+      return value == "true";
+    }
+
+    return value as bool;
+  }
+
+  int _decodeInt(dynamic value) {
+    if (value is String) {
+      return int.parse(value);
+    }
+
+    return value as int;
   }
 
   Configuration _decodeConfig(TypeMirror type, dynamic object) {
@@ -95,5 +105,43 @@ class MirrorConfigurationProperty extends ConfigurationProperty {
     });
 
     return map;
+  }
+
+  String get expectedType {
+    return property.type.reflectedType.toString();
+  }
+
+  String get source {
+    if (property.type.isSubtypeOf(reflectType(int))) {
+      return _decodeIntSource;
+    } else if (property.type.isSubtypeOf(reflectType(bool))) {
+      //return _decodeBool(value);
+    } else if (property.type.isSubtypeOf(reflectType(String))) {
+      //return _decodeStringSource;
+    } else if (property.type.isSubtypeOf(reflectType(Configuration))) {
+      //return _decodeConfig(type, value);
+    } else if (property.type.isSubtypeOf(reflectType(List))) {
+      //return _decodeList(type, value as List);
+    } else if (property.type.isSubtypeOf(reflectType(Map))) {
+    //  return _decodeMap(type, value as Map);
+
+      // package:runtime should have something that can 'decompose' a nested List/Map
+      // e.g. if Map<String, List<Foo>>... should be able to generate a func
+      // that takes dynamic map and hard casts each element to the necessary
+      // type to fit into a strictly typed variable
+    } else {
+
+    }
+
+    return "";
+  }
+
+  String get _decodeIntSource {
+    return """
+  final v = input['$key'];
+  if (v != null) {
+  
+  }     
+""";
   }
 }
