@@ -115,33 +115,54 @@ class MirrorConfigurationProperty {
     if (property.type.isSubtypeOf(reflectType(int))) {
       return _decodeIntSource;
     } else if (property.type.isSubtypeOf(reflectType(bool))) {
-      //return _decodeBool(value);
-    } else if (property.type.isSubtypeOf(reflectType(String))) {
-      //return _decodeStringSource;
+      return _decodeBoolSource;
     } else if (property.type.isSubtypeOf(reflectType(Configuration))) {
-      //return _decodeConfig(type, value);
-    } else if (property.type.isSubtypeOf(reflectType(List))) {
-      //return _decodeList(type, value as List);
+      return _decodeConfigSource;
+    } /*else if (property.type.isSubtypeOf(reflectType(List))) {
+      return _decodeList(type, value as List);
     } else if (property.type.isSubtypeOf(reflectType(Map))) {
-    //  return _decodeMap(type, value as Map);
+      return _decodeMap(type, value as Map);
 
       // package:runtime should have something that can 'decompose' a nested List/Map
       // e.g. if Map<String, List<Foo>>... should be able to generate a func
       // that takes dynamic map and hard casts each element to the necessary
       // type to fit into a strictly typed variable
-    } else {
-
+    } */else {
+      return "return v;";
     }
 
     return "";
   }
 
+  String get _decodeConfigSource {
+    return """
+    final item = ${expectedType}();
+
+    item.decode(v);
+
+    return item;
+    """;
+
+  }
+
   String get _decodeIntSource {
     return """
-  final v = input['$key'];
-  if (v != null) {
-  
-  }     
+    if (v is String) {
+      return int.parse(v);
+    }
+
+    return v as int;     
 """;
   }
+
+  String get _decodeBoolSource {
+    return """
+    if (v is String) {
+      return v == "true";
+    }
+
+    return v as bool;    
+    """;
+  }
+
 }
