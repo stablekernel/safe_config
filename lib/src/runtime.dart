@@ -60,15 +60,16 @@ class ConfigurationRuntimeImpl extends ConfigurationRuntime
     buf.writeln("final valuesCopy = Map.from(input);");
     properties.forEach((k, v) {
       buf.writeln("{");
-      buf.writeln("final v = valuesCopy.remove('$k');");
+      buf.writeln("final v = Configuration.getEnvironmentOrValue(valuesCopy.remove('$k'));");
       buf.writeln("if (v != null) {");
       buf.writeln(
           "  final decodedValue = tryDecode(configuration, '$k', () { ${v.source} });");
-      buf.writeln("  if (decodedValue is! ${v.expectedType}) {");
+      buf.writeln("  if (decodedValue is! ${v.codec.expectedType}) {");
       buf.writeln(
           "    throw ConfigurationException(configuration, 'input is wrong type', keyPath: ['$k']);");
       buf.writeln("  }");
-      buf.writeln("  (configuration as ${type.reflectedType.toString()}).$k = decodedValue as ${v.expectedType};");
+      buf.writeln(
+          "  (configuration as ${type.reflectedType.toString()}).$k = decodedValue as ${v.codec.expectedType};");
       buf.writeln("}");
       buf.writeln("}");
     });
@@ -122,7 +123,8 @@ class ConfigurationRuntimeImpl extends ConfigurationRuntime
     buf.writeln("final missingKeys = <String>[];");
     properties.forEach((name, property) {
       if (property.isRequired) {
-        buf.writeln("if ((configuration as ${type.reflectedType.toString()}).$name == null) {");
+        buf.writeln(
+            "if ((configuration as ${type.reflectedType.toString()}).$name == null) {");
         buf.writeln("  missingKeys.add('$name');");
         buf.writeln("}");
       }
@@ -137,12 +139,15 @@ class ConfigurationRuntimeImpl extends ConfigurationRuntime
 
   @override
   String compile(BuildContext ctx) {
-    // need to grab the same imports from the original file - this should cover every case
-    // need to be able to resolve this against original packages to get absolute URL..
-    // ctx knows how to do this via the package map it has
+    /*
+    Issue currently is that if we import a file from a package, it conflicts because we refer to it absolutely.
+    So if we do 'alsoImportOriginalFile', we end up having type conflicts for the declarations in package files
+    But we do want to keep this for importing script files...
+     */
     final directives = ctx.getImportDirectives(
         uri: type.originalDeclaration.location.sourceUri,
-        alsoImportOriginalFile: true);
+        alsoImportOriginalFile: true)
+      ..add("import 'package:safe_config/src/intermediate_exception.dart';");
 
     return """${directives.join("\n")}    
 final instance = ConfigurationRuntimeImpl();    
