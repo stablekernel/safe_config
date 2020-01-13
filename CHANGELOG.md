@@ -1,6 +1,6 @@
 # Changelog
 
-# 3.0.0
+# 3.0.0-b1
 
 - Improves error messaging at runtime to better identify issues with a configuration file
 - Adds 'package:runtime' support to enable AOT compilation using this package.
