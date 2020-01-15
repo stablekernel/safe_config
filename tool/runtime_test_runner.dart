@@ -51,7 +51,7 @@ Future main(List<String> args) async {
       passCounter++;
     }
     print("${makePrompt()} Completed tests derived from ${f.path}.");
-//    await bm.clean();
+    await bm.clean();
     remainingCounter--;
   }
 }
