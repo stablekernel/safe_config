@@ -4,8 +4,6 @@ import 'dart:io';
 import 'package:runtime/runtime.dart';
 
 Future main(List<String> args) async {
-  print(Directory("/home/travis/.pub-cache/").listSync(recursive: true).map((f) => f.path).join("\n"));
-
   final blacklist = ["no_default_constructor_test.dart"];
   final testFiles = Directory.fromUri(Directory.current.uri.resolve("test/"))
       .listSync(recursive: true)
