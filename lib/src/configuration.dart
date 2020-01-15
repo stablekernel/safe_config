@@ -1,8 +1,10 @@
 import 'dart:io';
-import 'dart:mirrors';
 
-import 'package:safe_config/src/default_configurations.dart';
+import 'package:runtime/runtime.dart';
 import 'package:yaml/yaml.dart';
+import 'package:meta/meta.dart';
+
+import 'package:safe_config/src/intermediate_exception.dart';
 
 /// Subclasses of [Configuration] read YAML strings and files, assigning values from the YAML document to properties
 /// of an instance of this type.
@@ -11,13 +13,15 @@ abstract class Configuration {
   Configuration();
 
   Configuration.fromMap(Map<dynamic, dynamic> map) {
-    _read(reflect(this).type, map);
+    decode(map.map<String, dynamic>((k, v) => MapEntry(k.toString(), v)));
   }
 
   /// [contents] must be YAML.
   Configuration.fromString(String contents) {
-    final config = loadYaml(contents) as Map<dynamic, dynamic>;
-    _read(reflect(this).type, config);
+    final yamlMap = loadYaml(contents) as Map<dynamic, dynamic>;
+    final map =
+        yamlMap.map<String, dynamic>((k, v) => MapEntry(k.toString(), v));
+    decode(map);
   }
 
   /// Opens a file and reads its string contents into this instance's properties.
@@ -25,179 +29,78 @@ abstract class Configuration {
   /// [file] must contain valid YAML data.
   Configuration.fromFile(File file) : this.fromString(file.readAsStringSync());
 
-  /// Subclasses may override this method to read from something that is not a Map.
+  ConfigurationRuntime get _runtime =>
+      RuntimeContext.current[runtimeType] as ConfigurationRuntime;
+
+  /// Ingests [value] into the properties of this type.
   ///
-  /// Sometimes a configuration value can be represented in multiple ways. For example, a [DatabaseConfiguration]
-  /// can be a [Map] of each component or a single URI [String] that can be decomposed into each component. Subclasses may override
-  /// this method to provide this type of behavior. This method is executed when an instance of [Configuration] is ready to be parsed,
-  /// but the value from the YAML is *not* a [Map]. By default, this method throws an exception.
-  void decode(dynamic anything) {
-    throw ConfigurationException(runtimeType, "Unexpected value '$anything'.");
+  /// Override this method to provide decoding behavior other than the default behavior.
+  void decode(dynamic value) {
+    if (value is! Map) {
+      throw ConfigurationException(
+          this, "input is not an object (is a '${value.runtimeType}')");
+    }
+
+    _runtime.decode(this, value as Map);
+
+    validate();
   }
 
-  /// Subclasses may override this method in order to validate the values of properties.
+  /// Validates this configuration.
   ///
-  /// This method is executed when an instance of [Configuration] is parsed.
-  /// If it returns a nonempty list, the parser will thrown a ConfigurationException.
-  List<String> validate() => [];
-
-  static bool _isVariableRequired(VariableMirror m) {
-    ConfigurationItemAttribute attribute = m.metadata
-        .firstWhere((im) => im.type.isSubtypeOf(reflectType(ConfigurationItemAttribute)), orElse: () => null)
-        ?.reflectee;
-
-    return attribute == null || attribute.type == ConfigurationItemAttributeType.required;
+  /// By default, ensures all required keys are non-null.
+  ///
+  /// Override this method to perform validations on input data. Throw [ConfigurationException]
+  /// for invalid data.
+  @mustCallSuper
+  void validate() {
+    _runtime.validate(this);
   }
 
-  static Map<String, VariableMirror> _getProperties(ClassMirror type) {
-    var declarations = <VariableMirror>[];
-
-    var ptr = type;
-    while (ptr != null) {
-      declarations.addAll(ptr.declarations.values
-          .whereType<VariableMirror>()
-          .where((vm) => !vm.isStatic && !vm.isPrivate));
-      ptr = ptr.superclass;
-    }
-
-    final output = <String, VariableMirror>{};
-    declarations.forEach((vm) {
-      output[MirrorSystem.getName(vm.simpleName)] = vm;
-    });
-    return output;
-  }
-
-  void _read(TypeMirror type, dynamic object) {
-    final expandErrorKeys = (Iterable keys) => keys.map((k) => "'$k'").join(",");
-    final reflectedThis = reflect(this);
-    final properties = _getProperties(reflectedThis.type);
-
-    if (object is! Map) {
-      decode(object);
-    } else {
-        properties.forEach((name, property) {
-          final actualValue = _getActualValue(object[name]);
-          if (actualValue == null) {
-            return;
-          }
-
-          final value = _decode(property.type, name, actualValue);
-          if (!property.type.isAssignableTo(reflect(value).type)) {
-            throw ConfigurationException(runtimeType, "The value '${actualValue}' is not assignable to the field '$name'.");
-          }
-
-          reflectedThis.setField(property.simpleName, value);
-        });
-
-      final unexpectedKeys = (object as Map).keys.where((key) => !properties.keys.contains(key));
-      if (unexpectedKeys.isNotEmpty) {
-        throw ConfigurationException(runtimeType,
-          "Extraneous keys found: '${expandErrorKeys(unexpectedKeys)}'");
-      }
-    }
-
-    final requiredValuesThatAreMissing = properties.values.where(_isVariableRequired)
-      .where((VariableMirror vm) => reflectedThis.getField(vm.simpleName).reflectee == null)
-      .map((VariableMirror vm) => MirrorSystem.getName(vm.simpleName))
-      .toList();
-
-    if (requiredValuesThatAreMissing.isNotEmpty) {
-      throw ConfigurationException(runtimeType,
-        "Missing required values: ${expandErrorKeys(requiredValuesThatAreMissing)}");
-    }
-
-    final validationErrors = validate();
-    if (validationErrors.isNotEmpty) {
-      throw ConfigurationException(runtimeType,
-        "Validation errors occurred: $validationErrors.");
-    }
-  }
-
-  dynamic _getActualValue(dynamic input) {
-    if (input != null && input is String && input.startsWith(r"$")) {
-      final envKey = input.substring(1);
-      if (!Platform.environment.containsKey(envKey)) {
-        return null;
-      }
-
-      return Platform.environment[envKey];
-    }
-
-    return input;
-  }
-
-  dynamic _decode(TypeMirror type, String name, dynamic input) {
-    if (input == null) {
-      return null;
-    }
-
-    var value = input;
+  static dynamic getEnvironmentOrValue(dynamic value) {
     if (value is String && value.startsWith(r"$")) {
       final envKey = value.substring(1);
       if (!Platform.environment.containsKey(envKey)) {
         return null;
       }
 
-      value = Platform.environment[envKey];
+      return Platform.environment[envKey];
     }
-
-    if (type.isSubtypeOf(reflectType(int))) {
-      if (value is String) {
-        final out = int.tryParse(value);
-        if (out == null) {
-          throw ConfigurationException(runtimeType, "The value '${value}' could not be parsed as an integer, and therefore cannot be assigned to the field '$name'.");
-        }
-        return out;
-      }
-      return value;
-    } else if (type.isSubtypeOf(reflectType(bool))) {
-      if (value is String) {
-        return value == "true";
-      }
-
-      return value;
-    } else if (type.isSubtypeOf(reflectType(Configuration))) {
-      return _decodeConfig(type, value);
-    } else if (type.isSubtypeOf(reflectType(List))) {
-      return _decodeList(type, name, value as List);
-    } else if (type.isSubtypeOf(reflectType(Map))) {
-      return _decodeMap(type, name, value as Map);
-    } else if (type.isSubtypeOf(reflectType(String))) {
-      return value;
-    }
-
     return value;
   }
+}
 
-  Configuration _decodeConfig(TypeMirror type, dynamic object) {
+abstract class ConfigurationRuntime {
+  void decode(Configuration configuration, Map input);
+  void validate(Configuration configuration);
+
+  dynamic tryDecode(Configuration configuration, String name, void decode()) {
     try {
-      Configuration item = (type as ClassMirror)
-        .newInstance(const Symbol(""), [])
-        .reflectee;
-      item._read(type, object);
-      return item;
-    } on NoSuchMethodError {
-      throw ConfigurationError(runtimeType,
-        "No default constructor found. Add '${type.reflectedType}();' to "
-          "class declaration.");
+      return decode();
+    } on ConfigurationException catch (e) {
+      throw ConfigurationException(configuration, e.message,
+        keyPath: [name]..addAll(e.keyPath));
+    } on IntermediateException catch (e) {
+      final underlying = e.underlying;
+      if (underlying is ConfigurationException) {
+        final keyPaths = [
+          [name],
+          e.keyPath,
+          underlying.keyPath
+        ].expand((i) => i).toList();
+        throw ConfigurationException(configuration, underlying.message,
+          keyPath: keyPaths);
+      } else if (underlying is CastError) {
+        throw ConfigurationException(configuration, "input is wrong type",
+          keyPath: [name]..addAll(e.keyPath));
+      }
+
+      throw ConfigurationException(configuration, underlying.toString(),
+        keyPath: [name]..addAll(e.keyPath));
+    } catch (e) {
+      throw ConfigurationException(configuration, e.toString(),
+        keyPath: [name]);
     }
-  }
-
-  List<dynamic> _decodeList(TypeMirror typeMirror, String name, List value) {
-    final decodedElements = value.map((v) => _decode(typeMirror.typeArguments.first, name, v));
-    return (typeMirror as ClassMirror).newInstance(#from, [decodedElements]).reflectee as List;
-  }
-
-  Map<dynamic, dynamic> _decodeMap(TypeMirror typeMirror, String name, Map value) {
-    final decoded = value.map((key, val) {
-      return MapEntry(key, _decode(typeMirror.typeArguments.last, name, val));
-    });
-
-    Map map = (typeMirror as ClassMirror).newInstance(const Symbol(""), []).reflectee;
-    decoded.forEach((k, v) {
-      map[k] = v;
-    });
-    return map;
   }
 }
 
@@ -220,24 +123,57 @@ class ConfigurationItemAttribute {
 }
 
 /// A [ConfigurationItemAttribute] for required properties.
-const ConfigurationItemAttribute requiredConfiguration = ConfigurationItemAttribute(ConfigurationItemAttributeType.required);
+const ConfigurationItemAttribute requiredConfiguration =
+    ConfigurationItemAttribute(ConfigurationItemAttributeType.required);
 
 /// A [ConfigurationItemAttribute] for optional properties.
-const ConfigurationItemAttribute optionalConfiguration = ConfigurationItemAttribute(ConfigurationItemAttributeType.optional);
+const ConfigurationItemAttribute optionalConfiguration =
+    ConfigurationItemAttribute(ConfigurationItemAttributeType.optional);
 
 /// Thrown when reading data into a [Configuration] fails.
 class ConfigurationException {
-  ConfigurationException(this.type, this.message);
+  ConfigurationException(this.configuration, this.message,
+      {this.keyPath = const []});
 
-  /// The type of [Configuration] in which this exception occurred.
-  final Type type;
+  ConfigurationException.missingKeys(
+      this.configuration, List<String> missingKeys, {this.keyPath = const []})
+      : message =
+            "missing required key(s): ${missingKeys.map((s) => "'$s'").join(", ")}";
+
+  /// The [Configuration] in which this exception occurred.
+  final Configuration configuration;
 
   /// The reason for the exception.
   final String message;
 
+  /// The key of the object being evaluated.
+  ///
+  /// Either a string (adds '.name') or an int (adds '\[value\]').
+  final List<dynamic> keyPath;
+
   @override
   String toString() {
-    return "Invalid configuration data for '$type'. $message";
+    if (keyPath?.isEmpty ?? true) {
+      return "Failed to read '${configuration.runtimeType}'\n\t-> $message";
+    }
+
+    final joinedKeyPath = StringBuffer();
+    for (var i = 0; i < keyPath.length; i++) {
+      final thisKey = keyPath[i];
+
+      if (thisKey is String) {
+        if (i != 0) {
+          joinedKeyPath.write(".");
+        }
+        joinedKeyPath.write(thisKey);
+      } else if (thisKey is int) {
+        joinedKeyPath.write("[$thisKey]");
+      } else {
+        throw StateError("not an int or String");
+      }
+    }
+
+    return "Failed to read key '${joinedKeyPath}' for '${configuration.runtimeType}'\n\t-> $message";
   }
 }
 
@@ -253,6 +189,6 @@ class ConfigurationError {
 
   @override
   String toString() {
-    return "Invalid configuration type 'type'. $message";
+    return "Invalid configuration type '$type'. $message";
   }
 }
