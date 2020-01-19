@@ -1,6 +1,6 @@
 name: safe_config
 description: A safe and convenient way to read YAML configuration files.
-version: 3.0.0-b1
+version: 3.0.0-b2
 author: stable|kernel <jobs@stablekernel.com>
 homepage: http://stablekernel.com
 documentation:

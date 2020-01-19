@@ -8,18 +8,6 @@ import 'mirror_property.dart';
 class ConfigurationRuntimeImpl extends ConfigurationRuntime
     implements SourceCompiler {
   ConfigurationRuntimeImpl(this.type) {
-    final classHasDefaultConstructor = type.declarations.values.any((dm) {
-      return dm is MethodMirror &&
-          dm.isConstructor &&
-          dm.constructorName == const Symbol('') &&
-          dm.parameters.every((p) => p.isOptional == true);
-    });
-
-    if (!classHasDefaultConstructor) {
-      throw StateError(
-          "Failed to compile '${type.reflectedType}'\n\t-> all 'Configuration' subclasses MUST declare an unnammed constructor (i.e. '${type.reflectedType}();')");
-    }
-
     properties = _properties;
   }
 
@@ -139,11 +127,6 @@ class ConfigurationRuntimeImpl extends ConfigurationRuntime
 
   @override
   String compile(BuildContext ctx) {
-    /*
-    Issue currently is that if we import a file from a package, it conflicts because we refer to it absolutely.
-    So if we do 'alsoImportOriginalFile', we end up having type conflicts for the declarations in package files
-    But we do want to keep this for importing script files...
-     */
     final directives = ctx.getImportDirectives(
         uri: type.originalDeclaration.location.sourceUri,
         alsoImportOriginalFile: true)

@@ -4,7 +4,22 @@ import 'package:safe_config/src/configuration.dart';
 import 'package:safe_config/src/intermediate_exception.dart';
 
 class MirrorTypeCodec {
-  MirrorTypeCodec(this.type);
+  MirrorTypeCodec(this.type) {
+    if (type.isSubtypeOf(reflectType(Configuration))) {
+      final klass = type as ClassMirror;
+      final classHasDefaultConstructor = klass.declarations.values.any((dm) {
+        return dm is MethodMirror &&
+          dm.isConstructor &&
+          dm.constructorName == const Symbol('') &&
+          dm.parameters.every((p) => p.isOptional == true);
+      });
+
+      if (!classHasDefaultConstructor) {
+        throw StateError(
+          "Failed to compile '${type.reflectedType}'\n\t-> 'Configuration' subclasses MUST declare an unnammed constructor (i.e. '${type.reflectedType}();') if they are nested.");
+      }
+    }
+  }
 
   final TypeMirror type;
 
@@ -158,6 +173,7 @@ return map;
   }
 
   String get _decodeConfigSource {
+
     return """
     final item = ${expectedType}();
 
