@@ -3,7 +3,7 @@ import 'package:safe_config/safe_config.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test("Configuration without unnamed constructor is an error at compile time", () {
+  test("Nested configuration without unnamed constructor is an error at compile time", () {
     try {
       RuntimeContext.current;
       fail('unreachable');
@@ -11,6 +11,10 @@ void main() {
       expect(e.toString(), contains("Failed to compile 'BadConfig'"));
     }
   });
+}
+
+class ParentConfig extends Configuration {
+  BadConfig badConfig;
 }
 
 class BadConfig extends Configuration {
