@@ -24,12 +24,21 @@ class ConfigurationRuntimeImpl extends ConfigurationRuntime
         return;
       }
 
-      var decodedValue =
-          tryDecode(configuration, name, () => property.decode(takingValue));
+      dynamic decodedValue;
+      MirrorConfigurationProperty propertyBackup;
+      if (property.property is MethodMirror) { // -- getter
+        propertyBackup = property;
+        property       = MirrorConfigurationProperty(getSetterForGetter(property.property as MethodMirror));
+      }
+      decodedValue = tryDecode(configuration, name, () => property.decode(takingValue));
 
-      if (!reflect(decodedValue).type.isAssignableTo(property.property.type)) {
-        throw ConfigurationException(configuration, "input is wrong type",
-            keyPath: [name]);
+      var valueType = reflect(decodedValue).type;
+      if (!valueType.isAssignableTo(property.codec.type)) {
+        throw ConfigurationException(configuration, "input is wrong type. Expected: `${property.codec.type.reflectedType}` but Found: ${valueType.reflectedType}", keyPath: [name]);
+      }
+
+      if (propertyBackup != null) {
+        property = propertyBackup;
       }
 
       final mirror = reflect(configuration);
@@ -87,13 +96,24 @@ class ConfigurationRuntimeImpl extends ConfigurationRuntime
   }
 
   Map<String, MirrorConfigurationProperty> get _properties {
-    var declarations = <VariableMirror>[];
+    var declarations = <DeclarationMirror>[];
 
     var ptr = type;
     while (ptr.isSubclassOf(reflectClass(Configuration))) {
-      declarations.addAll(ptr.declarations.values
-          .whereType<VariableMirror>()
-          .where((vm) => !vm.isStatic && !vm.isPrivate));
+      var properties = ptr.declarations.values.whereType<VariableMirror>();
+      var computed   = ptr.declarations.values.whereType<MethodMirror>().where((vm) {
+        if (vm.isGetter) {
+          return getSetterForGetter(vm) != null;
+        } else if (vm.isSetter) {
+          return getGetterForSetter(vm) != null;
+        } else {
+          return false;
+        }
+      }).toList()..removeWhere((MethodMirror vm) => vm.isSetter);
+
+      declarations.addAll(properties.where((vm) => !vm.isPrivate && !vm.isStatic));
+      declarations.addAll(computed  .where((vm) => !vm.isPrivate && !vm.isStatic));
+
       ptr = ptr.superclass;
     }
 
@@ -146,5 +166,24 @@ class ConfigurationRuntimeImpl extends ConfigurationRuntime {
   }
 }    
     """;
+  }
+
+  MethodMirror getSetterForGetter(MethodMirror getter) {
+    var targetName = MirrorSystem.getName(getter.simpleName) + '=';
+
+    return (getter.owner as ClassMirror).declarations.values
+      .whereType<MethodMirror>()
+      .firstWhere((maybe) => maybe.isSetter && MirrorSystem.getName(maybe.simpleName) == targetName, orElse: () => null);
+  }
+
+  MethodMirror getGetterForSetter(MethodMirror setter) {
+    return (setter.owner as ClassMirror).declarations.values
+      .whereType<MethodMirror>()
+      .firstWhere((maybe) {
+        var targetName = MirrorSystem.getName(maybe.simpleName) + '=';
+
+        return maybe.isGetter && MirrorSystem.getName(setter.simpleName) == targetName;
+      }
+      , orElse: () => null);
   }
 }

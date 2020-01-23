@@ -5,7 +5,7 @@ import 'package:safe_config/src/intermediate_exception.dart';
 
 class MirrorTypeCodec {
   MirrorTypeCodec(this.type) {
-    if (type.isSubtypeOf(reflectType(Configuration))) {
+    if (type != reflectType(dynamic) && type.isSubtypeOf(reflectType(Configuration))) {
       final klass = type as ClassMirror;
       final classHasDefaultConstructor = klass.declarations.values.any((dm) {
         return dm is MethodMirror &&
@@ -24,16 +24,18 @@ class MirrorTypeCodec {
   final TypeMirror type;
 
   dynamic _decodeValue(dynamic value) {
-    if (type.isSubtypeOf(reflectType(int))) {
-      return _decodeInt(value);
-    } else if (type.isSubtypeOf(reflectType(bool))) {
-      return _decodeBool(value);
-    } else if (type.isSubtypeOf(reflectType(Configuration))) {
-      return _decodeConfig(value);
-    } else if (type.isSubtypeOf(reflectType(List))) {
-      return _decodeList(value as List);
-    } else if (type.isSubtypeOf(reflectType(Map))) {
-      return _decodeMap(value as Map);
+    if (type != reflectType(dynamic)) {
+      if (type.isSubtypeOf(reflectType(int))) {
+        return _decodeInt(value);
+      } else if (type.isSubtypeOf(reflectType(bool))) {
+        return _decodeBool(value);
+      } else if (type.isSubtypeOf(reflectType(Configuration))) {
+        return _decodeConfig(value);
+      } else if (type.isSubtypeOf(reflectType(List))) {
+        return _decodeList(value as List);
+      } else if (type.isSubtypeOf(reflectType(Map))) {
+        return _decodeMap(value as Map);
+      }
     }
 
     return value;
@@ -206,9 +208,9 @@ return map;
 }
 
 class MirrorConfigurationProperty {
-  MirrorConfigurationProperty(this.property) : codec = MirrorTypeCodec(property.type);
+  MirrorConfigurationProperty(this.property) : codec = MirrorTypeCodec(property is VariableMirror ? property.type : ((property as MethodMirror).isGetter ? (property as MethodMirror).returnType : (property as MethodMirror).parameters.first.type));
 
-  final VariableMirror property;
+  final DeclarationMirror property;
   final MirrorTypeCodec codec;
 
   String get key => MirrorSystem.getName(property.simpleName);
@@ -216,7 +218,7 @@ class MirrorConfigurationProperty {
 
   String get source => codec.source;
 
-  static bool _isVariableRequired(VariableMirror m) {
+  static bool _isVariableRequired(DeclarationMirror m) {
     final attribute = m.metadata
         .firstWhere(
             (im) =>
