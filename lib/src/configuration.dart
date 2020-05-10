@@ -1,10 +1,10 @@
 import 'dart:io';
 
-import 'package:runtime/runtime.dart';
-import 'package:yaml/yaml.dart';
+import 'package:dotenv/dotenv.dart';
 import 'package:meta/meta.dart';
-
+import 'package:runtime/runtime.dart';
 import 'package:safe_config/src/intermediate_exception.dart';
+import 'package:yaml/yaml.dart';
 
 /// Subclasses of [Configuration] read YAML strings and files, assigning values from the YAML document to properties
 /// of an instance of this type.
@@ -57,14 +57,20 @@ abstract class Configuration {
     _runtime.validate(this);
   }
 
+  /// Get Environment variable or Value from String
+  ///
+  /// Assumes precedence of Environment loaded by the dotenv package over system variables
+  /// Assumes prior call to load() function from dotenv package
   static dynamic getEnvironmentOrValue(dynamic value) {
     if (value is String && value.startsWith(r"$")) {
       final envKey = value.substring(1);
-      if (!Platform.environment.containsKey(envKey)) {
-        return null;
+      if (env.containsKey(envKey)) {
+        return env[envKey];
       }
-
-      return Platform.environment[envKey];
+      if (Platform.environment.containsKey(envKey)) {
+        return Platform.environment[envKey];
+      }
+      return null;
     }
     return value;
   }
@@ -79,7 +85,7 @@ abstract class ConfigurationRuntime {
       return decode();
     } on ConfigurationException catch (e) {
       throw ConfigurationException(configuration, e.message,
-        keyPath: [name]..addAll(e.keyPath));
+          keyPath: [name]..addAll(e.keyPath));
     } on IntermediateException catch (e) {
       final underlying = e.underlying;
       if (underlying is ConfigurationException) {
@@ -89,17 +95,17 @@ abstract class ConfigurationRuntime {
           underlying.keyPath
         ].expand((i) => i).toList();
         throw ConfigurationException(configuration, underlying.message,
-          keyPath: keyPaths);
+            keyPath: keyPaths);
       } else if (underlying is CastError) {
         throw ConfigurationException(configuration, "input is wrong type",
-          keyPath: [name]..addAll(e.keyPath));
+            keyPath: [name]..addAll(e.keyPath));
       }
 
       throw ConfigurationException(configuration, underlying.toString(),
-        keyPath: [name]..addAll(e.keyPath));
+          keyPath: [name]..addAll(e.keyPath));
     } catch (e) {
       throw ConfigurationException(configuration, e.toString(),
-        keyPath: [name]);
+          keyPath: [name]);
     }
   }
 }
