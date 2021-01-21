@@ -18,10 +18,12 @@ abstract class Configuration {
 
   /// [contents] must be YAML.
   Configuration.fromString(String contents) {
-    final yamlMap = loadYaml(contents) as Map<dynamic, dynamic>;
-    final map =
-        yamlMap.map<String, dynamic>((k, v) => MapEntry(k.toString(), v));
-    decode(map);
+    dynamic yaml = loadYaml(contents);
+    if (yaml is Map) {
+      yaml = (yaml as Map<dynamic, dynamic>).map<String, dynamic>((k, v) => MapEntry(k.toString(), v));
+    }
+
+    decode(yaml);
   }
 
   /// Opens a file and reads its string contents into this instance's properties.
