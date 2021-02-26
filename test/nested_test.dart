@@ -178,26 +178,26 @@ class Parent extends Configuration {
 
   Parent.fromMap(Map m) : super.fromMap(m);
 
-  String id;
+  String? id;
 
   @optionalConfiguration
-  List<List<Parent>> listOfListOfParents;
+  List<List<Parent>>? listOfListOfParents;
 
   @optionalConfiguration
-  List<Parent> peers;
+  List<Parent>? peers;
 
   @optionalConfiguration
-  Map<String, Child> namedChildren;
+  Map<String, Child>? namedChildren;
 }
 
 class Child extends Configuration {
-  String id;
+  String? id;
 
   @optionalConfiguration
-  Parent parent;
+  Parent? parent;
 
   @optionalConfiguration
-  List<Child> peers;
+  List<Child>? peers;
 }
 
 String getMessage(Map object) {
