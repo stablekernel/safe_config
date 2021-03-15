@@ -74,7 +74,8 @@ abstract class ConfigurationRuntime {
   void decode(Configuration configuration, Map input);
   void validate(Configuration configuration);
 
-  dynamic tryDecode(Configuration configuration, String name, void decode()) {
+  dynamic tryDecode(
+      Configuration configuration, String name, dynamic decode()) {
     try {
       return decode();
     } on ConfigurationException catch (e) {

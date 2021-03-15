@@ -3,8 +3,8 @@ import 'dart:mirrors';
 
 import 'package:runtime/runtime.dart';
 
-import 'configuration.dart';
-import 'runtime.dart';
+import 'package:safe_config/src/configuration.dart';
+import 'package:safe_config/src/runtime.dart';
 
 class ConfigurationCompiler extends Compiler {
   @override

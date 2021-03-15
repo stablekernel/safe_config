@@ -14,4 +14,4 @@ dependencies:
     git: https://github.com/j4qfrost/dart-runtime.git
 
 dev_dependencies:
-  test: ^1.16.4
+  test: ^1.16.5

@@ -3,7 +3,7 @@ import 'dart:mirrors';
 import 'package:runtime/runtime.dart';
 import 'package:safe_config/src/configuration.dart';
 
-import 'mirror_property.dart';
+import 'package:safe_config/src/mirror_property.dart';
 
 class ConfigurationRuntimeImpl extends ConfigurationRuntime
     implements SourceCompiler {
@@ -132,7 +132,6 @@ class ConfigurationRuntimeImpl extends ConfigurationRuntime
         uri: type.originalDeclaration.location!.sourceUri,
         alsoImportOriginalFile: true)
       ..add("import 'package:safe_config/src/intermediate_exception.dart';");
-
     return """${directives.join("\n")}    
 final instance = ConfigurationRuntimeImpl();    
 class ConfigurationRuntimeImpl extends ConfigurationRuntime {
