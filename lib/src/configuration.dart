@@ -20,7 +20,7 @@ abstract class Configuration {
   Configuration.fromString(String contents) {
     final yamlMap = loadYaml(contents);
     final map =
-        yamlMap.map<String, dynamic>((k, v) => MapEntry(k.toString(), v));
+        yamlMap?.map<String, dynamic>((k, v) => MapEntry(k.toString(), v));
     decode(map);
   }
 
