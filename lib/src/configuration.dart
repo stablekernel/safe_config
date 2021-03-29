@@ -18,7 +18,7 @@ abstract class Configuration {
 
   /// [contents] must be YAML.
   Configuration.fromString(String contents) {
-    final yamlMap = loadYaml(contents);
+    final yamlMap = loadYaml(contents) as Map<dynamic, dynamic>?;
     final map =
         yamlMap?.map<String, dynamic>((k, v) => MapEntry(k.toString(), v));
     decode(map);
@@ -75,7 +75,10 @@ abstract class ConfigurationRuntime {
   void validate(Configuration configuration);
 
   dynamic tryDecode(
-      Configuration configuration, String name, dynamic decode()) {
+      Configuration configuration,
+      String name,
+      dynamic decode(),
+) {
     try {
       return decode();
     } on ConfigurationException catch (e) {
