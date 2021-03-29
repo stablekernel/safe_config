@@ -17,11 +17,11 @@ void main() {
     var t = TopLevelConfiguration.fromString(yamlString);
     expect(t.port, 80);
     expect(t.name, "foobar");
-    expect(t.database.host, "stablekernel.com");
-    expect(t.database.username, "bob");
-    expect(t.database.password, "fred");
-    expect(t.database.databaseName, "dbname");
-    expect(t.database.port, 5000);
+    expect(t.database!.host, "stablekernel.com");
+    expect(t.database!.username, "bob");
+    expect(t.database!.password, "fred");
+    expect(t.database!.databaseName, "dbname");
+    expect(t.database!.port, 5000);
 
     var asMap = {
       "port": 80,
@@ -37,11 +37,11 @@ void main() {
     t = TopLevelConfiguration.fromMap(asMap);
     expect(t.port, 80);
     expect(t.name, "foobar");
-    expect(t.database.host, "stablekernel.com");
-    expect(t.database.username, "bob");
-    expect(t.database.password, "fred");
-    expect(t.database.databaseName, "dbname");
-    expect(t.database.port, 5000);
+    expect(t.database!.host, "stablekernel.com");
+    expect(t.database!.username, "bob");
+    expect(t.database!.password, "fred");
+    expect(t.database!.databaseName, "dbname");
+    expect(t.database!.port, 5000);
   });
 
   test("Configuration subclasses success case", () {
@@ -58,12 +58,12 @@ void main() {
     var t = ConfigurationSubclass.fromString(yamlString);
     expect(t.port, 80);
     expect(t.extraValue, 2);
-    expect(t.database.host, "stablekernel.com");
-    expect(t.database.username, "bob");
-    expect(t.database.password, "fred");
-    expect(t.database.databaseName, "dbname");
-    expect(t.database.port, 5000);
-    expect(t.database.extraDatabaseValue, 3);
+    expect(t.database!.host, "stablekernel.com");
+    expect(t.database!.username, "bob");
+    expect(t.database!.password, "fred");
+    expect(t.database!.databaseName, "dbname");
+    expect(t.database!.port, 5000);
+    expect(t.database!.extraDatabaseValue, 3);
 
     var asMap = {
       "port": 80,
@@ -80,12 +80,12 @@ void main() {
     t = ConfigurationSubclass.fromMap(asMap);
     expect(t.port, 80);
     expect(t.extraValue, 2);
-    expect(t.database.host, "stablekernel.com");
-    expect(t.database.username, "bob");
-    expect(t.database.password, "fred");
-    expect(t.database.databaseName, "dbname");
-    expect(t.database.port, 5000);
-    expect(t.database.extraDatabaseValue, 3);
+    expect(t.database!.host, "stablekernel.com");
+    expect(t.database!.username, "bob");
+    expect(t.database!.password, "fred");
+    expect(t.database!.databaseName, "dbname");
+    expect(t.database!.port, 5000);
+    expect(t.database!.extraDatabaseValue, 3);
   });
 
   test("Extra property", () {
@@ -103,7 +103,13 @@ void main() {
       var _ = TopLevelConfiguration.fromString(yamlString);
       fail('unreachable');
     } on ConfigurationException catch (e) {
-      expect(e.toString(), allOf([contains("TopLevelConfiguration"), contains("unexpected keys found"), contains("'extraKey'")]));
+      expect(
+          e.toString(),
+          allOf([
+            contains("TopLevelConfiguration"),
+            contains("unexpected keys found"),
+            contains("'extraKey'")
+          ]));
     }
 
     try {
@@ -123,7 +129,13 @@ void main() {
       fail('unreachable');
     } on ConfigurationException catch (e) {
       print("$e");
-      expect(e.toString(), allOf([contains("TopLevelConfiguration"), contains("unexpected keys found"), contains("'extraKey'")]));
+      expect(
+          e.toString(),
+          allOf([
+            contains("TopLevelConfiguration"),
+            contains("unexpected keys found"),
+            contains("'extraKey'")
+          ]));
     }
   });
 
@@ -141,7 +153,13 @@ void main() {
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       print("$e");
-      expect(e.toString(), allOf([contains("missing required"), contains("TopLevelConfiguration"), contains("'port'")]));
+      expect(
+          e.toString(),
+          allOf([
+            contains("missing required"),
+            contains("TopLevelConfiguration"),
+            contains("'port'")
+          ]));
     }
 
     try {
@@ -159,7 +177,13 @@ void main() {
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       print("$e");
-      expect(e.toString(), allOf([contains("missing required"), contains("TopLevelConfiguration"), contains("'port'")]));
+      expect(
+          e.toString(),
+          allOf([
+            contains("missing required"),
+            contains("TopLevelConfiguration"),
+            contains("'port'")
+          ]));
     }
   });
 
@@ -171,7 +195,13 @@ void main() {
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       print("$e");
-      expect(e.toString(), allOf([contains("missing required"), contains("TopLevelConfiguration"), contains("'database'")]));
+      expect(
+          e.toString(),
+          allOf([
+            contains("missing required"),
+            contains("TopLevelConfiguration"),
+            contains("'database'")
+          ]));
     }
 
     try {
@@ -180,7 +210,13 @@ void main() {
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       print("$e");
-      expect(e.toString(), allOf([contains("missing required"), contains("TopLevelConfiguration"), contains("'database'")]));
+      expect(
+          e.toString(),
+          allOf([
+            contains("missing required"),
+            contains("TopLevelConfiguration"),
+            contains("'database'")
+          ]));
     }
   });
 
@@ -226,7 +262,13 @@ void main() {
       fail("unreachable");
     } on ConfigurationException catch (e) {
       print("$e");
-      expect(e.toString(), allOf([contains("missing required"), contains("ConfigurationSubclass"), contains("'port'")]));
+      expect(
+          e.toString(),
+          allOf([
+            contains("missing required"),
+            contains("ConfigurationSubclass"),
+            contains("'port'")
+          ]));
     }
 
     try {
@@ -246,7 +288,13 @@ void main() {
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       print("$e");
-      expect(e.toString(), allOf([contains("missing required"), contains("ConfigurationSubclass"), contains("'port'")]));
+      expect(
+          e.toString(),
+          allOf([
+            contains("missing required"),
+            contains("ConfigurationSubclass"),
+            contains("'port'")
+          ]));
     }
   });
 
@@ -266,7 +314,13 @@ void main() {
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       print("$e");
-      expect(e.toString(), allOf([contains("missing required"), contains("ConfigurationSubclass"), contains("'extraValue'")]));
+      expect(
+          e.toString(),
+          allOf([
+            contains("missing required"),
+            contains("ConfigurationSubclass"),
+            contains("'extraValue'")
+          ]));
     }
 
     try {
@@ -286,7 +340,13 @@ void main() {
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       print("$e");
-      expect(e.toString(), allOf([contains("missing required"), contains("ConfigurationSubclass"), contains("'extraValue'")]));
+      expect(
+          e.toString(),
+          allOf([
+            contains("missing required"),
+            contains("ConfigurationSubclass"),
+            contains("'extraValue'")
+          ]));
     }
   });
 
@@ -306,7 +366,13 @@ void main() {
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       print("$e");
-      expect(e.toString(), allOf([contains("missing required"), contains("ConfigurationSubclass"), contains("'port'")]));
+      expect(
+          e.toString(),
+          allOf([
+            contains("missing required"),
+            contains("ConfigurationSubclass"),
+            contains("'port'")
+          ]));
     }
 
     try {
@@ -326,7 +392,13 @@ void main() {
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       print("$e");
-      expect(e.toString(), allOf([contains("missing required"), contains("ConfigurationSubclass"), contains("'port'")]));
+      expect(
+          e.toString(),
+          allOf([
+            contains("missing required"),
+            contains("ConfigurationSubclass"),
+            contains("'port'")
+          ]));
     }
   });
 
@@ -346,7 +418,13 @@ void main() {
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       print("$e");
-      expect(e.toString(), allOf([contains("missing required"), contains("ConfigurationSubclass"), contains("'extraDatabaseValue'")]));
+      expect(
+          e.toString(),
+          allOf([
+            contains("missing required"),
+            contains("ConfigurationSubclass"),
+            contains("'extraDatabaseValue'")
+          ]));
     }
 
     try {
@@ -366,7 +444,13 @@ void main() {
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       print("$e");
-      expect(e.toString(), allOf([contains("missing required"), contains("ConfigurationSubclass"), contains("'extraDatabaseValue'")]));
+      expect(
+          e.toString(),
+          allOf([
+            contains("missing required"),
+            contains("ConfigurationSubclass"),
+            contains("'extraDatabaseValue'")
+          ]));
     }
   });
 
@@ -385,7 +469,12 @@ void main() {
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       print("$e");
-      expect(e.toString(), allOf([contains("ConfigurationSubclassWithValidation"), contains("not a host.com")]));
+      expect(
+          e.toString(),
+          allOf([
+            contains("ConfigurationSubclassWithValidation"),
+            contains("not a host.com")
+          ]));
     }
 
     try {
@@ -404,7 +493,12 @@ void main() {
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       print("$e");
-      expect(e.toString(), allOf([contains("ConfigurationSubclassWithValidation"), contains("not a host.com")]));
+      expect(
+          e.toString(),
+          allOf([
+            contains("ConfigurationSubclassWithValidation"),
+            contains("not a host.com")
+          ]));
     }
   });
 
@@ -420,11 +514,11 @@ void main() {
     var t = TopLevelConfiguration.fromString(yamlString);
     expect(t.port, 80);
     expect(t.name, isNull);
-    expect(t.database.host, "stablekernel.com");
-    expect(t.database.username, "bob");
-    expect(t.database.password, "fred");
-    expect(t.database.databaseName, "dbname");
-    expect(t.database.port, 5000);
+    expect(t.database!.host, "stablekernel.com");
+    expect(t.database!.username, "bob");
+    expect(t.database!.password, "fred");
+    expect(t.database!.databaseName, "dbname");
+    expect(t.database!.port, 5000);
 
     var asMap = {
       "port": 80,
@@ -439,11 +533,11 @@ void main() {
     t = TopLevelConfiguration.fromMap(asMap);
     expect(t.port, 80);
     expect(t.name, isNull);
-    expect(t.database.host, "stablekernel.com");
-    expect(t.database.username, "bob");
-    expect(t.database.password, "fred");
-    expect(t.database.databaseName, "dbname");
-    expect(t.database.port, 5000);
+    expect(t.database!.host, "stablekernel.com");
+    expect(t.database!.username, "bob");
+    expect(t.database!.password, "fred");
+    expect(t.database!.databaseName, "dbname");
+    expect(t.database!.port, 5000);
   });
 
   test("Nested optional can be missing", () {
@@ -458,25 +552,30 @@ void main() {
     var t = TopLevelConfiguration.fromString(yamlString);
     expect(t.port, 80);
     expect(t.name, "foobar");
-    expect(t.database.host, "stablekernel.com");
-    expect(t.database.username, isNull);
-    expect(t.database.password, "fred");
-    expect(t.database.databaseName, "dbname");
-    expect(t.database.port, 5000);
+    expect(t.database!.host, "stablekernel.com");
+    expect(t.database!.username, isNull);
+    expect(t.database!.password, "fred");
+    expect(t.database!.databaseName, "dbname");
+    expect(t.database!.port, 5000);
 
     var asMap = {
       "port": 80,
       "name": "foobar",
-      "database": {"host": "stablekernel.com", "password": "fred", "databaseName": "dbname", "port": 5000}
+      "database": {
+        "host": "stablekernel.com",
+        "password": "fred",
+        "databaseName": "dbname",
+        "port": 5000
+      }
     };
     t = TopLevelConfiguration.fromMap(asMap);
     expect(t.port, 80);
     expect(t.name, "foobar");
-    expect(t.database.host, "stablekernel.com");
-    expect(t.database.username, isNull);
-    expect(t.database.password, "fred");
-    expect(t.database.databaseName, "dbname");
-    expect(t.database.port, 5000);
+    expect(t.database!.host, "stablekernel.com");
+    expect(t.database!.username, isNull);
+    expect(t.database!.password, "fred");
+    expect(t.database!.databaseName, "dbname");
+    expect(t.database!.port, 5000);
   });
 
   test("Nested required cannot be missing", () {
@@ -492,20 +591,36 @@ void main() {
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       print("$e");
-      expect(e.toString(), allOf([contains("missing"), contains("TopLevelConfiguration"), contains("'databaseName'")]));
+      expect(
+          e.toString(),
+          allOf([
+            contains("missing"),
+            contains("TopLevelConfiguration"),
+            contains("'databaseName'")
+          ]));
     }
 
     try {
       var asMap = {
         "port": 80,
         "name": "foobar",
-        "database": {"host": "stablekernel.com", "password": "fred", "port": 5000}
+        "database": {
+          "host": "stablekernel.com",
+          "password": "fred",
+          "port": 5000
+        }
       };
       var _ = TopLevelConfiguration.fromMap(asMap);
       fail("Should not succeed");
     } on ConfigurationException catch (e) {
       print("$e");
-      expect(e.toString(), allOf([contains("missing"), contains("TopLevelConfiguration"), contains("'databaseName'")]));
+      expect(
+          e.toString(),
+          allOf([
+            contains("missing"),
+            contains("TopLevelConfiguration"),
+            contains("'databaseName'")
+          ]));
     }
   });
 
@@ -537,24 +652,24 @@ void main() {
 
     var special = SpecialInfo.fromString(yamlString);
     expect(special.strings, ["abcd", "efgh"]);
-    expect(special.databaseRecords.first.host, "stablekernel.com");
-    expect(special.databaseRecords.first.databaseName, "db1");
-    expect(special.databaseRecords.first.port, 1000);
+    expect(special.databaseRecords!.first.host, "stablekernel.com");
+    expect(special.databaseRecords!.first.databaseName, "db1");
+    expect(special.databaseRecords!.first.port, 1000);
 
-    expect(special.databaseRecords.last.username, "bob");
-    expect(special.databaseRecords.last.databaseName, "db2");
-    expect(special.databaseRecords.last.port, 2000);
-    expect(special.databaseRecords.last.host, "stablekernel.com");
+    expect(special.databaseRecords!.last.username, "bob");
+    expect(special.databaseRecords!.last.databaseName, "db2");
+    expect(special.databaseRecords!.last.port, 2000);
+    expect(special.databaseRecords!.last.host, "stablekernel.com");
 
-    expect(special.integers["first"], 1);
-    expect(special.integers["second"], 2);
-    expect(special.databaseMap["db1"].databaseName, "db1");
-    expect(special.databaseMap["db1"].host, "stablekernel.com");
-    expect(special.databaseMap["db1"].port, 1000);
-    expect(special.databaseMap["db2"].username, "bob");
-    expect(special.databaseMap["db2"].databaseName, "db2");
-    expect(special.databaseMap["db2"].port, 2000);
-    expect(special.databaseMap["db2"].host, "stablekernel.com");
+    expect(special.integers!["first"], 1);
+    expect(special.integers!["second"], 2);
+    expect(special.databaseMap!["db1"]!.databaseName, "db1");
+    expect(special.databaseMap!["db1"]!.host, "stablekernel.com");
+    expect(special.databaseMap!["db1"]!.port, 1000);
+    expect(special.databaseMap!["db2"]!.username, "bob");
+    expect(special.databaseMap!["db2"]!.databaseName, "db2");
+    expect(special.databaseMap!["db2"]!.port, 2000);
+    expect(special.databaseMap!["db2"]!.host, "stablekernel.com");
   });
 
   test("From file works the same", () {
@@ -573,11 +688,11 @@ void main() {
     var t = TopLevelConfiguration.fromFile(File("tmp.yaml"));
     expect(t.port, 80);
     expect(t.name, "foobar");
-    expect(t.database.host, "stablekernel.com");
-    expect(t.database.username, "bob");
-    expect(t.database.password, "fred");
-    expect(t.database.databaseName, "dbname");
-    expect(t.database.port, 5000);
+    expect(t.database!.host, "stablekernel.com");
+    expect(t.database!.username, "bob");
+    expect(t.database!.password, "fred");
+    expect(t.database!.databaseName, "dbname");
+    expect(t.database!.port, 5000);
 
     file.deleteSync();
   });
@@ -597,9 +712,9 @@ void main() {
 
     config = OptionalEmbeddedContainer.fromString(yamlString);
     expect(config.port, 80);
-    expect(config.database.host, "here");
-    expect(config.database.port, 90);
-    expect(config.database.databaseName, "db");
+    expect(config.database!.host, "here");
+    expect(config.database!.port, 90);
+    expect(config.database!.databaseName, "db");
   });
 
   test("Optional nested ConfigurationItem obeys required items", () {
@@ -623,34 +738,38 @@ void main() {
 
     var values = OptionalEmbeddedContainer.fromString(yamlString);
     expect(values.port, 80);
-    expect(values.database.username, "dart");
-    expect(values.database.password, "pw");
-    expect(values.database.port, 5432);
-    expect(values.database.databaseName, "dbname");
+    expect(values.database!.username, "dart");
+    expect(values.database!.password, "pw");
+    expect(values.database!.port, 5432);
+    expect(values.database!.databaseName, "dbname");
   });
 
-  test("Database configuration as a string can contain an URL-encoded authority", () {
+  test(
+      "Database configuration as a string can contain an URL-encoded authority",
+      () {
     var yamlString = "port: 80\n"
         "database: \"postgres://dart%40google.com:pass%23word@host:5432/dbname\"\n";
 
     var values = OptionalEmbeddedContainer.fromString(yamlString);
-    expect(values.database.username, "dart@google.com");
-    expect(values.database.password, "pass#word");
+    expect(values.database!.username, "dart@google.com");
+    expect(values.database!.password, "pass#word");
   });
 
-  test("Omitting optional values in a 'decoded' config still returns succees", () {
+  test("Omitting optional values in a 'decoded' config still returns succees",
+      () {
     var yamlString = "port: 80\n"
         "database: \"postgres://host:5432/dbname\"\n";
 
     var values = OptionalEmbeddedContainer.fromString(yamlString);
     expect(values.port, 80);
-    expect(values.database.username, isNull);
-    expect(values.database.password, isNull);
-    expect(values.database.port, 5432);
-    expect(values.database.databaseName, "dbname");
+    expect(values.database!.username, isNull);
+    expect(values.database!.password, isNull);
+    expect(values.database!.port, 5432);
+    expect(values.database!.databaseName, "dbname");
   });
 
-  test("Not including required values in a 'decoded' config still yields error", () {
+  test("Not including required values in a 'decoded' config still yields error",
+      () {
     var yamlString = "port: 80\n"
         "database: \"postgres://dart:pw@host:5432\"\n";
 
@@ -659,17 +778,25 @@ void main() {
       expect(true, false);
     } on ConfigurationException catch (e) {
       print("$e");
-      expect(e.toString(), allOf([contains("missing"), contains("OptionalEmbeddedContainer"), contains("'databaseName'")]));
+      expect(
+          e.toString(),
+          allOf([
+            contains("missing"),
+            contains("OptionalEmbeddedContainer"),
+            contains("'databaseName'")
+          ]));
     }
   });
 
   test("Environment variable escape values read from Environment", () {
-    print("This test must be run with environment variables of TEST_VALUE=1 and TEST_BOOL=true");
+    print(
+        "This test must be run with environment variables of TEST_VALUE=1 and TEST_BOOL=true");
 
-    var yamlString = "path: \$PATH\noptionalDooDad: \$XYZ123\ntestValue: \$TEST_VALUE\ntestBoolean: \$TEST_BOOL";
+    var yamlString =
+        "path: \$PATH\noptionalDooDad: \$XYZ123\ntestValue: \$TEST_VALUE\ntestBoolean: \$TEST_BOOL";
     var values = EnvironmentConfiguration.fromString(yamlString);
     expect(values.path, Platform.environment["PATH"]);
-    expect(values.testValue, int.parse(Platform.environment["TEST_VALUE"]));
+    expect(values.testValue, int.parse(Platform.environment["TEST_VALUE"]!));
     expect(values.testBoolean, true);
     expect(values.optionalDooDad, isNull);
   });
@@ -703,22 +830,24 @@ void main() {
         "This test must be run with environment variables of TEST_DB_ENV_VAR=postgres://user:password@host:5432/dbname");
     const yamlString = "port: 80\ndatabase: \$TEST_DB_ENV_VAR";
     final config = TopLevelConfiguration.fromString(yamlString);
-    expect(config.database.username, "user");
-    expect(config.database.password, "password");
-    expect(config.database.host, "host");
-    expect(config.database.port, 5432);
-    expect(config.database.databaseName, "dbname");
+    expect(config.database!.username, "user");
+    expect(config.database!.password, "password");
+    expect(config.database!.host, "host");
+    expect(config.database!.port, 5432);
+    expect(config.database!.databaseName, "dbname");
   });
-  
-  test("Assigning value of incorrect type to parsed integer emits error and field name", () {
+
+  test(
+      "Assigning value of incorrect type to parsed integer emits error and field name",
+      () {
     var yamlString = "port: foobar\n"
-      "name: foobar\n"
-      "database:\n"
-      "  host: stablekernel.com\n"
-      "  username: bob\n"
-      "  password: fred\n"
-      "  databaseName: dbname\n"
-      "  port: 5000";
+        "name: foobar\n"
+        "database:\n"
+        "  host: stablekernel.com\n"
+        "  username: bob\n"
+        "  password: fred\n"
+        "  databaseName: dbname\n"
+        "  port: 5000";
 
     try {
       TopLevelConfiguration.fromString(yamlString);
@@ -731,16 +860,18 @@ void main() {
     }
   });
 
-  test("Assigning value of incorrect type to nested field emits error and field name", () {
+  test(
+      "Assigning value of incorrect type to nested field emits error and field name",
+      () {
     var yamlString = "port: 1000\n"
-      "name: foobar\n"
-      "database:\n"
-      "  host: stablekernel.com\n"
-      "  username:\n"
-      "    - item\n"
-      "  password: password\n"
-      "  databaseName: dbname\n"
-      "  port: 5000";
+        "name: foobar\n"
+        "database:\n"
+        "  host: stablekernel.com\n"
+        "  username:\n"
+        "    - item\n"
+        "  password: password\n"
+        "  databaseName: dbname\n"
+        "  port: 5000";
 
     try {
       TopLevelConfiguration.fromString(yamlString);
@@ -780,94 +911,102 @@ void main() {
 class TopLevelConfiguration extends Configuration {
   TopLevelConfiguration();
 
-  TopLevelConfiguration.fromString(String contents) : super.fromString(contents);
+  TopLevelConfiguration.fromString(String contents)
+      : super.fromString(contents);
 
   TopLevelConfiguration.fromFile(File file) : super.fromFile(file);
 
   TopLevelConfiguration.fromMap(Map map) : super.fromMap(map);
 
   @requiredConfiguration
-  int port;
+  int? port;
 
   @optionalConfiguration
-  String name;
+  String? name;
 
-  DatabaseConfiguration database;
+  DatabaseConfiguration? database;
 }
 
 class TopLevelConfigurationWithValidation extends Configuration {
   TopLevelConfigurationWithValidation();
 
-  TopLevelConfigurationWithValidation.fromString(String contents) : super.fromString(contents);
+  TopLevelConfigurationWithValidation.fromString(String contents)
+      : super.fromString(contents);
 
-  TopLevelConfigurationWithValidation.fromFile(File file) : super.fromFile(file);
+  TopLevelConfigurationWithValidation.fromFile(File file)
+      : super.fromFile(file);
 
   TopLevelConfigurationWithValidation.fromMap(Map map) : super.fromMap(map);
 
   @requiredConfiguration
-  int port;
+  int? port;
 
   @override
   void validate() {
     super.validate();
-    if (port < 0 || port > 65535) {
+    if (port! < 0 || port! > 65535) {
       throw ConfigurationException(this, "$port", keyPath: ["port"]);
     }
   }
 
   @optionalConfiguration
-  String name;
+  String? name;
 }
 
 class DatabaseConfigurationSubclass extends DatabaseConfiguration {
   DatabaseConfigurationSubclass();
 
-  int extraDatabaseValue;
+  int? extraDatabaseValue;
 }
 
 class ConfigurationSuperclass extends Configuration {
   ConfigurationSuperclass();
 
-  ConfigurationSuperclass.fromString(String contents) : super.fromString(contents);
+  ConfigurationSuperclass.fromString(String contents)
+      : super.fromString(contents);
 
   ConfigurationSuperclass.fromFile(File file) : super.fromFile(file);
 
   ConfigurationSuperclass.fromMap(Map map) : super.fromMap(map);
 
   @requiredConfiguration
-  int port;
+  int? port;
 
   @optionalConfiguration
-  String name;
+  String? name;
 }
 
 class ConfigurationSubclass extends ConfigurationSuperclass {
   ConfigurationSubclass();
 
-  ConfigurationSubclass.fromString(String contents) : super.fromString(contents);
+  ConfigurationSubclass.fromString(String contents)
+      : super.fromString(contents);
 
   ConfigurationSubclass.fromFile(File file) : super.fromFile(file);
 
   ConfigurationSubclass.fromMap(Map map) : super.fromMap(map);
 
-  int extraValue;
+  int? extraValue;
 
-  DatabaseConfigurationSubclass database;
+  DatabaseConfigurationSubclass? database;
 }
 
 class ConfigurationSubclassWithValidation extends ConfigurationSuperclass {
   ConfigurationSubclassWithValidation();
 
-  ConfigurationSubclassWithValidation.fromString(String contents) : super.fromString(contents);
+  ConfigurationSubclassWithValidation.fromString(String contents)
+      : super.fromString(contents);
 
-  ConfigurationSubclassWithValidation.fromFile(File file) : super.fromFile(file);
+  ConfigurationSubclassWithValidation.fromFile(File file)
+      : super.fromFile(file);
 
   ConfigurationSubclassWithValidation.fromMap(Map map) : super.fromMap(map);
 
-  DatabaseConfigurationSubclassWithValidation database;
+  DatabaseConfigurationSubclassWithValidation? database;
 }
 
-class DatabaseConfigurationSubclassWithValidation extends DatabaseConfiguration {
+class DatabaseConfigurationSubclassWithValidation
+    extends DatabaseConfiguration {
   DatabaseConfigurationSubclassWithValidation();
 
   @override
@@ -875,8 +1014,8 @@ class DatabaseConfigurationSubclassWithValidation extends DatabaseConfiguration 
     super.validate();
     RegExp validHost = RegExp(
         r"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$");
-    if (!validHost.hasMatch(host)) {
-      throw ConfigurationException(this, host, keyPath: ["host"]);
+    if (!validHost.hasMatch(host!)) {
+      throw ConfigurationException(this, host!, keyPath: ["host"]);
     }
   }
 }
@@ -886,54 +1025,57 @@ class SpecialInfo extends Configuration {
 
   SpecialInfo.fromString(String contents) : super.fromString(contents);
 
-  List<String> strings;
-  List<DatabaseConfiguration> databaseRecords;
-  Map<String, int> integers;
-  Map<String, DatabaseConfiguration> databaseMap;
+  List<String>? strings;
+  List<DatabaseConfiguration>? databaseRecords;
+  Map<String, int>? integers;
+  Map<String, DatabaseConfiguration>? databaseMap;
 }
 
 class OptionalEmbeddedContainer extends Configuration {
   OptionalEmbeddedContainer();
 
-  OptionalEmbeddedContainer.fromString(String contents) : super.fromString(contents);
+  OptionalEmbeddedContainer.fromString(String contents)
+      : super.fromString(contents);
 
-  int port;
+  int? port;
 
   @optionalConfiguration
-  DatabaseConfiguration database;
+  DatabaseConfiguration? database;
 }
 
 class EnvironmentConfiguration extends Configuration {
   EnvironmentConfiguration();
 
-  EnvironmentConfiguration.fromString(String contents) : super.fromString(contents);
+  EnvironmentConfiguration.fromString(String contents)
+      : super.fromString(contents);
 
-  String path;
-  int testValue;
-  bool testBoolean;
+  String? path;
+  int? testValue;
+  bool? testBoolean;
 
   @optionalConfiguration
-  String optionalDooDad;
+  String? optionalDooDad;
 }
 
 class StaticVariableConfiguration extends Configuration {
-
   StaticVariableConfiguration();
 
-  StaticVariableConfiguration.fromString(String contents) : super.fromString(contents);
+  StaticVariableConfiguration.fromString(String contents)
+      : super.fromString(contents);
 
-  static String staticVariable;
+  static String? staticVariable;
 
-  int value;
+  int? value;
 }
 
 class PrivateVariableConfiguration extends Configuration {
   PrivateVariableConfiguration();
 
-  PrivateVariableConfiguration.fromString(String contents) : super.fromString(contents);
+  PrivateVariableConfiguration.fromString(String contents)
+      : super.fromString(contents);
 
-  String _privateVariable;
-  int value;
+  String? _privateVariable;
+  int? value;
 }
 
 class EnvFail extends Configuration {
@@ -941,21 +1083,21 @@ class EnvFail extends Configuration {
 
   EnvFail.fromString(String contents) : super.fromString(contents);
 
-  String value;
+  String? value;
 }
 
 class BoolConfig extends Configuration {
   BoolConfig();
   BoolConfig.fromString(String contents) : super.fromString(contents);
 
-  bool value;
+  bool? value;
 }
 
 class DefaultValConfig extends Configuration {
   DefaultValConfig();
   DefaultValConfig.fromString(String contents) : super.fromString(contents);
 
-  String required;
+  String? required;
 
   @optionalConfiguration
   String value = "default";

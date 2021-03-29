@@ -31,16 +31,17 @@ Future main(List<String> args) async {
     await bm.build();
 
     print("${makePrompt()} Running tests derived from ${f.path}...");
-    print("${makePrompt()} Running tests derived from ${f.path}...");
     final result = await Process.start("dart", ["test/main_test.dart"],
-      workingDirectory:
-      ctx.buildDirectoryUri.toFilePath(windows: Platform.isWindows),
-    environment: {
-      "TEST_BOOL": "true",
-      "TEST_DB_ENV_VAR": "postgres://user:password@host:5432/dbname",
-      "TEST_VALUE": "1"
-    });
+        workingDirectory:
+            ctx.buildDirectoryUri.toFilePath(windows: Platform.isWindows),
+        environment: {
+          "TEST_BOOL": "true",
+          "TEST_DB_ENV_VAR": "postgres://user:password@host:5432/dbname",
+          "TEST_VALUE": "1"
+        });
+    // ignore: unawaited_futures
     stdout.addStream(result.stdout);
+    // ignore: unawaited_futures
     stderr.addStream(result.stderr);
 
     if (await result.exitCode != 0) {

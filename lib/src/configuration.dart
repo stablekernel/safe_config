@@ -18,9 +18,9 @@ abstract class Configuration {
 
   /// [contents] must be YAML.
   Configuration.fromString(String contents) {
-    final yamlMap = loadYaml(contents) as Map<dynamic, dynamic>;
+    final yamlMap = loadYaml(contents) as Map<dynamic, dynamic>?;
     final map =
-        yamlMap.map<String, dynamic>((k, v) => MapEntry(k.toString(), v));
+        yamlMap?.map<String, dynamic>((k, v) => MapEntry(k.toString(), v));
     decode(map);
   }
 
@@ -41,7 +41,7 @@ abstract class Configuration {
           this, "input is not an object (is a '${value.runtimeType}')");
     }
 
-    _runtime.decode(this, value as Map);
+    _runtime.decode(this, value);
 
     validate();
   }
@@ -74,12 +74,16 @@ abstract class ConfigurationRuntime {
   void decode(Configuration configuration, Map input);
   void validate(Configuration configuration);
 
-  dynamic tryDecode(Configuration configuration, String name, void decode()) {
+  dynamic tryDecode(
+      Configuration configuration,
+      String name,
+      dynamic decode(),
+) {
     try {
       return decode();
     } on ConfigurationException catch (e) {
       throw ConfigurationException(configuration, e.message,
-        keyPath: [name]..addAll(e.keyPath));
+          keyPath: [name]..addAll(e.keyPath));
     } on IntermediateException catch (e) {
       final underlying = e.underlying;
       if (underlying is ConfigurationException) {
@@ -89,17 +93,17 @@ abstract class ConfigurationRuntime {
           underlying.keyPath
         ].expand((i) => i).toList();
         throw ConfigurationException(configuration, underlying.message,
-          keyPath: keyPaths);
-      } else if (underlying is CastError) {
+            keyPath: keyPaths);
+      } else if (underlying is TypeError) {
         throw ConfigurationException(configuration, "input is wrong type",
-          keyPath: [name]..addAll(e.keyPath));
+            keyPath: [name]..addAll(e.keyPath));
       }
 
       throw ConfigurationException(configuration, underlying.toString(),
-        keyPath: [name]..addAll(e.keyPath));
+          keyPath: [name]..addAll(e.keyPath));
     } catch (e) {
       throw ConfigurationException(configuration, e.toString(),
-        keyPath: [name]);
+          keyPath: [name]);
     }
   }
 }
@@ -153,7 +157,7 @@ class ConfigurationException {
 
   @override
   String toString() {
-    if (keyPath?.isEmpty ?? true) {
+    if (keyPath.isEmpty) {
       return "Failed to read '${configuration.runtimeType}'\n\t-> $message";
     }
 
